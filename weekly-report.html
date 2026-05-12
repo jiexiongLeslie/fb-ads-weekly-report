@@ -1,0 +1,3358 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook Ads 周报系统 - 模块化版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--sb:#1a1f36;--sb-h:#252b45;--sb-a:#2d3456;--sb-t:#a0aec0;--sb-ta:#fff;--sb-w:240px;--bg:#f7f8fc;--card:#fff;--acc:#f59e0b;--acc-l:#fef3c7;--acc-d:#d97706;--t1:#1a202c;--t2:#4a5568;--tm:#a0aec0;--bd:#e2e8f0;--ok:#10b981;--ok-bg:#d1fae5;--warn:#f59e0b;--warn-bg:#fef3c7;--err:#ef4444;--err-bg:#fee2e2;--sh:0 1px 3px rgba(0,0,0,.08);--r:6px;--tr:all .25s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:14px}
+body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}
+.app{display:flex;min-height:100vh}
+.sidebar{width:var(--sb-w);background:var(--sb);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-hd{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{font-size:1.1rem;font-weight:700;color:var(--sb-ta);display:flex;align-items:center;gap:10px}
+.logo-i{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--acc-d));border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-t{color:var(--sb-t);font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;padding:12px 20px 6px;font-weight:500}
+.nl{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sb-t);text-decoration:none;font-size:.88rem;transition:var(--tr);border-left:3px solid transparent;cursor:pointer}
+.nl:hover{background:var(--sb-h);color:var(--sb-ta)}
+.nl.active{background:var(--sb-a);color:var(--sb-ta);border-left-color:var(--acc)}
+.nl .ni{width:20px;text-align:center;flex-shrink:0}
+.sb-ft{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);color:var(--sb-t);font-size:.75rem;display:flex;align-items:center;gap:6px}
+.sd{width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block}
+.mc{margin-left:var(--sb-w);flex:1;min-height:100vh}
+.tb{background:var(--card);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;box-shadow:var(--sh)}
+.tb-l{display:flex;align-items:center;gap:16px}
+.ms{display:flex;align-items:center;gap:8px}
+.ms label{font-weight:500;color:var(--t2)}
+.ms select{padding:8px 12px;border:1px solid var(--bd);border-radius:var(--r);background:var(--card);font-size:.9rem;cursor:pointer}
+.tb-a{display:flex;gap:10px}
+.btn{padding:10px 18px;border-radius:var(--r);border:none;font-size:.85rem;font-weight:500;cursor:pointer;transition:var(--tr);display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-p{background:var(--acc);color:#fff}.btn-p:hover{background:var(--acc-d)}
+.btn-s{background:var(--bg);color:var(--t2);border:1px solid var(--bd)}.btn-s:hover{background:var(--bd)}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.ca{padding:24px 32px}
+.sec{background:var(--card);border-radius:10px;margin-bottom:24px;box-shadow:var(--sh);overflow:hidden}
+.sh{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--bd)}
+.sh:hover{background:rgba(0,0,0,.01)}
+.sh-l{display:flex;align-items:center;gap:8px}
+.si{font-size:1.1rem;flex-shrink:0}
+.sn{width:8px;height:8px;background:var(--acc);border-radius:2px}
+.st{font-weight:600;font-size:1rem}
+.stg{color:var(--tm);font-size:.8rem;transition:transform .3s}
+.sbd{padding:24px}.sbd.hide{display:none}
+.filter-bar{background:#f8fafc;border:1px solid var(--bd);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-bar span{font-size:.85rem;color:var(--t2);white-space:nowrap}
+.filter-bar input[type="date"]{padding:5px 8px;border:1px solid var(--bd);border-radius:var(--r);font-size:.8rem;font-family:inherit;width:130px;background:#fff}
+.filter-bar input[type="date"]:hover,.filter-bar input[type="date"]:focus{border-color:var(--acc)}
+.filter-bar .filter-info{margin-left:auto;font-size:.8rem;color:var(--tm);background:#fff;padding:4px 10px;border-radius:var(--r);border:1px solid var(--bd);white-space:nowrap}
+.filter-bar .btn-sm{padding:5px 10px;font-size:.75rem}
+.kpi-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.kpi-c{padding:20px;border-left:4px solid var(--acc);background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
+.kpi-lb{font-size:.85rem;color:var(--t2);margin-bottom:8px}
+.kpi-vl{font-size:1.8rem;font-weight:700;margin-bottom:8px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:600}
+.badge-g{background:var(--ok-bg);color:#065f46}.badge-y{background:var(--warn-bg);color:#92400e}.badge-r{background:var(--err-bg);color:#991b1b}
+.sync-b{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;border-radius:var(--r);padding:12px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:.85rem;color:#1e40af}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:#f8fafc;padding:12px 16px;text-align:left;font-weight:600;color:var(--t2);border-bottom:2px solid var(--bd);white-space:nowrap;position:sticky;top:0}
+td{padding:10px 16px;border-bottom:1px solid var(--bd);vertical-align:top}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:hover{background:#eef2ff}
+input,textarea,select{font-family:inherit;font-size:.88rem;padding:8px 12px;border:1px solid var(--bd);border-radius:var(--r);width:100%;transition:var(--tr)}
+input:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+textarea{resize:vertical;min-height:60px}
+.ra{display:flex;gap:6px}
+.ra button{padding:4px 10px;font-size:.75rem;border-radius:4px;border:1px solid var(--bd);background:#fff;cursor:pointer;color:var(--t2)}
+.ra button:hover{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+.arb{margin-top:12px;padding:8px 16px;font-size:.85rem;border:1px dashed var(--bd);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tm);width:100%;transition:var(--tr)}
+.arb:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-l)}
+.tc{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;align-items:center;gap:8px;font-size:.88rem;animation:si .3s ease;min-width:250px}
+.toast.ok{background:#065f46;color:#fff}.toast.warn{background:#92400e;color:#fff}.toast.err{background:#991b1b;color:#fff}
+@keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.mo{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000}
+.mo-c{background:var(--card);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);width:90%;max-width:520px;max-height:90vh;overflow-y:auto}
+.mo-h{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.mo-h h3{font-size:1.1rem;font-weight:600}
+.mo-x{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--tm)}
+.mo-b{padding:24px}
+.mo-f{padding:16px 24px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:10px}
+.dr{display:flex;gap:16px;margin-bottom:20px}.dr>div{flex:1}.dr label{display:block;font-size:.85rem;font-weight:500;color:var(--t2);margin-bottom:6px}
+.qs{margin-bottom:20px}.qs label{display:block;font-size:.85rem;font-weight:500;color:var(--t2);margin-bottom:8px}.qs .bg{display:flex;gap:8px;flex-wrap:wrap}
+.sa{background:var(--bg);border-radius:var(--r);padding:16px}.sa p{font-size:.85rem;font-weight:500;margin-bottom:8px;color:var(--t2)}.sa ul{list-style:none;padding:0}.sa li{padding:4px 0;font-size:.85rem}.sa li::before{content:"\2022 ";color:var(--acc)}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.cb{background:var(--card);border-radius:10px;padding:20px;box-shadow:var(--sh)}
+.cb h4{font-size:.95rem;font-weight:600;margin-bottom:16px;color:var(--t1)}
+.cb canvas{max-height:320px}
+.tbar{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tbtn{padding:8px 16px;border:1px solid var(--bd);border-radius:var(--r);background:#fff;cursor:pointer;font-size:.85rem;transition:var(--tr);font-family:inherit}
+.tbtn:hover{background:var(--acc-l)}
+.tbtn.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.header-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.header-info label{font-size:.85rem;font-weight:500;color:var(--t2);display:block;margin-bottom:4px}
+.site-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:20px}
+.site-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;border-top:4px solid var(--acc);transition:var(--tr)}
+.site-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.site-card h4{font-size:1rem;font-weight:600;margin-bottom:8px;color:var(--t1)}
+.site-card .date-range{font-size:.8rem;color:var(--tm);margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.site-card .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.site-card .metric{font-size:.85rem}
+.site-card .metric .ml{color:var(--t2);font-size:.8rem;margin-bottom:2px}
+.site-card .metric .mv{font-weight:700;font-size:1.1rem}
+/* FB同步概览样式 */
+.overview-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.overview-card{background:linear-gradient(135deg,var(--acc) 0%,#4f46e5 100%);border-radius:var(--r);padding:20px;color:#fff;box-shadow:var(--sh)}
+.overview-card .ov-label{font-size:.85rem;opacity:.9;margin-bottom:4px}
+.overview-card .ov-value{font-size:1.8rem;font-weight:700}
+.overview-card .ov-delta{font-size:.85rem;margin-top:4px;opacity:.9}
+.sync-charts{margin-bottom:24px}
+.weekly-charts{margin-bottom:24px}
+.product-charts{margin-bottom:24px}
+.pcmp-charts{margin-bottom:24px}
+.aud-charts{margin-bottom:24px}
+.pcmp-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.pcmp-table th{background:#f1f5f9;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid var(--bd);position:sticky;top:0}
+.pcmp-table td{padding:8px 10px;border-bottom:1px solid #e2e8f0}
+.pcmp-table .up{color:#16a34a;font-weight:600}
+.pcmp-table .down{color:#dc2626;font-weight:600}
+.pcmp-table .flat{color:#64748b}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--bd);margin-top:12px}
+.page-info{font-size:.85rem;color:var(--t2)}
+.page-btns{display:flex;gap:4px;flex-wrap:wrap}
+.td-campaign{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.budget-input{width:100px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:.85rem;text-align:right;background:var(--bg)}
+.budget-input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(99,102,241,.2)}
+textarea.dyn-textarea,table textarea{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:4px;font-size:.85rem;font-family:inherit;resize:vertical;min-height:60px;line-height:1.5;background:var(--bg);color:var(--t1);box-sizing:border-box}
+table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(99,102,241,.2)}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-row-3{grid-template-columns:1fr 1fr 1fr}
+.chart-row-2{grid-template-columns:1fr 1fr}
+.chart-box{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--sh);min-width:0}
+.chart-box canvas{max-height:280px}
+.chart-box-wide{grid-column:span 2}
+.chart-box-wide canvas{max-height:320px !important}
+@media(max-width:768px){.chart-row,.chart-row-3,.chart-row-2{grid-template-columns:1fr}.chart-box-wide{grid-column:span 1}}
+.divider{border:none;border-top:2px solid var(--bd);margin:32px 0}
+.divider-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.divider-label span{font-size:1.2rem;font-weight:700;color:var(--t1);white-space:nowrap}
+.divider-label::after{content:'';flex:1;height:2px;background:var(--bd)}
+.growth-up{color:#10b981;font-weight:600}
+.growth-down{color:#ef4444;font-weight:600}
+.roi-high{color:#10b981;font-weight:700}
+.roi-mid{color:#f59e0b;font-weight:700}
+.roi-low{color:#ef4444;font-weight:700}
+.event-compare{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.event-box{background:var(--bg);border-radius:var(--r);padding:20px}
+.event-box h4{margin-bottom:12px;color:var(--t1)}
+.event-box .analysis{margin-top:12px;padding:12px;background:#fffbeb;border-left:4px solid var(--warn);border-radius:4px;font-size:.85rem;color:#92400e;line-height:1.8}
+.tbl-wrap{overflow-x:auto}
+.data-source-label{margin-bottom:16px;padding:12px 16px;background:#f0f4ff;border-left:4px solid #3b82f6;border-radius:var(--r);font-size:.85rem;color:#1e40af}
+.summary-row{background:#f0f4ff !important;font-weight:600}
+.summary-row td{border-top:2px solid #3b82f6}
+.empty-state{text-align:center;padding:40px;color:var(--tm)}
+.empty-state p:first-child{font-size:1.1rem;margin-bottom:8px}
+.empty-state p:last-child{font-size:.85rem}
+@media(max-width:768px){
+.sidebar{width:60px}.sidebar .logo span,.sidebar .nav-t,.sidebar .nl span:not(.ni),.sidebar .sb-ft span:not(.sd){display:none}
+.sidebar .nl{justify-content:center;padding:10px}.sidebar .sb-hd{padding:16px 8px}
+.mc{margin-left:60px}.ca{padding:16px}.tb{padding:12px 16px;flex-wrap:wrap;gap:8px}
+.header-info{grid-template-columns:1fr}.cr{grid-template-columns:1fr}.event-compare{grid-template-columns:1fr}
+.filter-bar{flex-direction:column;align-items:flex-start}
+.filter-bar .filter-info{margin-left:0;margin-top:8px;width:100%}
+.site-card .metrics{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+<div class="sb-hd"><div class="logo"><div class="logo-i">&#128202;</div><span>FB Ads 周报</span></div></div>
+<div class="nav">
+<div class="nav-t">报告模块</div>
+<div class="nl active" onclick="go('sec-header')"><span class="ni">&#128203;</span><span>1. 报告头部</span></div>
+<div class="nl" onclick="go('sec-kpi')"><span class="ni">&#127919;</span><span>2. 关键指标</span></div>
+<div class="nl" onclick="go('sec-work')"><span class="ni">&#9989;</span><span>3. 重点工作</span></div>
+<div class="nl" onclick="go('sec-issues')"><span class="ni">&#9888;</span><span>4. 内部问题</span></div>
+<div class="nl" onclick="go('sec-help')"><span class="ni">&#128587;</span><span>5. 领导协助</span></div>
+<div class="nl" onclick="go('sec-innovation')"><span class="ni">&#128161;</span><span>6. 创新思考</span></div>
+<div class="nav-t">数据分析</div>
+<div class="nl" onclick="go('sec-sync')"><span class="ni">&#128260;</span><span>7. 同步数据概览</span></div>
+<div class="nl" onclick="go('sec-weekly')"><span class="ni">&#128197;</span><span>8. 站点数据对比</span></div>
+<div class="nl" onclick="go('sec-product')"><span class="ni">&#128230;</span><span>9. 产品投放明细</span></div>
+<div class="nl" onclick="go('sec-budget')"><span class="ni">&#128176;</span><span>10. 预算对比</span></div>
+<div class="nl" onclick="go('sec-productcmp')"><span class="ni">&#128270;</span><span>11. 产品对比</span></div>
+<div class="nl" onclick="go('sec-charts')"><span class="ni">&#128202;</span><span>12. 站点对比看板</span></div>
+<div class="nl" onclick="go('sec-audience')"><span class="ni">&#128101;</span><span>13. 受众分析</span></div>
+</div>
+<div class="sb-ft"><span class="sd"></span><span>数据已自动保存</span></div>
+</div>
+<div class="mc">
+<div class="tb">
+<div class="tb-l"><div class="ms"><label>报告月份:</label><select id="rMonth" onchange="onMonthChange()"><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5" selected>5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select></div></div>
+<div class="tb-a">
+<button class="btn btn-s" onclick="showSyncModal()" id="syncBtn">&#128260; 同步FB数据</button>
+<button class="btn btn-s" onclick="clearAll()">&#128465; 清空数据</button>
+<button class="btn btn-p" onclick="exportData()">&#128196; 导出报告</button>
+</div>
+</div>
+<div class="ca">
+<div id="syncArea"></div>
+
+<!-- ========== 报告头部 ========== -->
+<div class="sec" id="sec-header">
+<div class="sh" onclick="tog('sec-header')"><div class="sh-l"><span class="si">&#128203;</span><span class="st">关键指标</span></div><span class="stg" id="tg-sec-header">&#9660;</span></div>
+<div class="sbd" id="bd-sec-header">
+<div class="header-info">
+<div><label>总结部门</label><input id="hDept" placeholder="请输入部门名称" onchange="S.dept=this.value;save();renderHeaderInfo()"></div>
+<div><label>报告人</label><input id="hReporter" placeholder="请输入报告人姓名" onchange="S.reporter=this.value;save();renderHeaderInfo()"></div>
+<div><label>报告日期</label><input type="date" id="hDate" onchange="S.reportDate=this.value;save();renderHeaderInfo()"></div>
+</div>
+<div id="headerInfoDisplay" style="padding:12px 16px;background:#f8fafc;border-radius:var(--r);font-size:.9rem;color:var(--t2);border:1px solid var(--bd);"></div>
+</div>
+</div>
+
+<!-- ========== 关键指标达成情况 ========== -->
+<div class="sec" id="sec-kpi">
+<div class="sh" onclick="tog('sec-kpi')"><div class="sh-l"><span class="si">&#127919;</span><span class="st">关键指标情况</span></div><span class="stg" id="tg-sec-kpi">&#9660;</span></div>
+<div class="sbd" id="bd-sec-kpi">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="kpiStart">
+<span>~</span>
+<input type="date" id="kpiEnd">
+<button class="btn btn-sm btn-p" onclick="applyKpiFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearKpiFilter()">清除</button>
+<span class="filter-info" id="kpiFilterInfo">全部数据</span>
+</div>
+<div class="tbl-wrap">
+<table><thead><tr><th>关键指标</th><th>目标</th><th>实际值</th><th>达成率</th><th>备注</th><th></th></tr></thead><tbody id="kpiTb"></tbody></table>
+</div>
+<button class="arb" onclick="addRow('kpi')">+ 添加一行</button>
+</div>
+</div>
+
+<!-- ========== 重点工作完成情况 ========== -->
+<div class="sec" id="sec-work">
+<div class="sh" onclick="tog('sec-work')"><div class="sh-l"><span class="si">&#128640;</span><span class="st">重点工作完成情况</span></div><span class="stg" id="tg-sec-work">&#9660;</span></div>
+<div class="sbd" id="bd-sec-work">
+<div class="tbl-wrap">
+<table><thead><tr><th>重点工作</th><th>工作描述</th><th>成果描述</th><th>价值贡献</th><th>备注</th><th></th></tr></thead><tbody id="workTb"></tbody></table>
+</div>
+<button class="arb" onclick="addRow('work')">+ 添加一行</button>
+</div>
+</div>
+
+<!-- ========== 内部存在的问题 ========== -->
+<div class="sec" id="sec-issues">
+<div class="sh" onclick="tog('sec-issues')"><div class="sh-l"><span class="si">&#9888;&#65039;</span><span class="st">内部存在的问题</span></div><span class="stg" id="tg-sec-issues">&#9660;</span></div>
+<div class="sbd" id="bd-sec-issues">
+<div class="tbl-wrap">
+<table><thead><tr><th>存在问题</th><th>问题简述</th><th>根因分析</th><th>计划举措</th><th>备注</th><th></th></tr></thead><tbody id="issuesTb"></tbody></table>
+</div>
+<button class="arb" onclick="addRow('issues')">+ 添加一行</button>
+</div>
+</div>
+
+<!-- ========== 需要领导协助 ========== -->
+<div class="sec" id="sec-help">
+<div class="sh" onclick="tog('sec-help')"><div class="sh-l"><span class="si">&#129309;</span><span class="st">需要领导协助</span></div><span class="stg" id="tg-sec-help">&#9660;</span></div>
+<div class="sbd" id="bd-sec-help">
+<div class="tbl-wrap">
+<table><thead><tr><th>存在问题</th><th>问题简述</th><th>是否需要协助</th><th>协助方向</th><th>备注</th><th></th></tr></thead><tbody id="helpTb"></tbody></table>
+</div>
+<button class="arb" onclick="addRow('help')">+ 添加一行</button>
+</div>
+</div>
+
+<!-- ========== 其他工作思考与创新 ========== -->
+<div class="sec" id="sec-innovation">
+<div class="sh" onclick="tog('sec-innovation')"><div class="sh-l"><span class="si">&#128161;</span><span class="st">其他工作思考与创新</span></div><span class="stg" id="tg-sec-innovation">&#9660;</span></div>
+<div class="sbd" id="bd-sec-innovation">
+<div class="tbl-wrap">
+<table><thead><tr><th>类别</th><th>创新思考简述</th><th>备注</th><th></th></tr></thead><tbody id="innovationTb"></tbody></table>
+</div>
+<button class="arb" onclick="addRow('innovation')">+ 添加一行</button>
+</div>
+</div>
+
+<!-- ========== FB同步数据概览 ========== -->
+<div class="sec" id="sec-sync">
+<div class="sh" onclick="tog('sec-sync')"><div class="sh-l"><span class="si">&#128260;</span><span class="st">FB同步数据概览</span></div><span class="stg" id="tg-sec-sync">&#9660;</span></div>
+<div class="sbd" id="bd-sec-sync">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="syncStart">
+<span>~</span>
+<input type="date" id="syncEnd">
+<button class="btn btn-sm btn-p" onclick="applySyncFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearSyncFilter()">清除</button>
+<span class="filter-info" id="syncFilterInfo">全部数据</span>
+</div>
+<div class="tbar">
+<button class="tbtn active" onclick="switchSyncType('conversion')" id="syncTypeConv">转化广告</button>
+<button class="tbtn" onclick="switchSyncType('traffic')" id="syncTypeTraffic">流量广告</button>
+</div>
+<!-- 总体概览卡片 -->
+<div id="syncOverview" class="overview-cards"></div>
+<!-- 站点对比图表 -->
+<div class="sync-charts">
+<div class="chart-row">
+<div class="chart-box"><canvas id="syncSpendChart"></canvas></div>
+<div class="chart-box"><canvas id="syncSalesChart"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="chart-box"><canvas id="syncROIChart"></canvas></div>
+<div class="chart-box"><canvas id="syncConvChart"></canvas></div>
+</div>
+</div>
+<!-- 站点详细卡片 -->
+<div id="syncCards" class="site-cards"></div>
+<div id="syncPlaceholder" class="empty-state">
+<p>暂无同步数据</p>
+<p>点击顶部「同步FB数据」按钮获取最新广告数据</p>
+</div>
+</div>
+</div>
+
+<!-- ========== 各站点数据对比 ========== -->
+<div class="sec" id="sec-weekly">
+<div class="sh" onclick="tog('sec-weekly')"><div class="sh-l"><span class="si">&#127758;</span><span class="st">各站点数据对比</span></div><span class="stg" id="tg-sec-weekly">&#9660;</span></div>
+<div class="sbd" id="bd-sec-weekly">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="weeklyStart">
+<span>~</span>
+<input type="date" id="weeklyEnd">
+<button class="btn btn-sm btn-p" onclick="applyWeeklyFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearWeeklyFilter()">清除</button>
+<span class="filter-info" id="weeklyFilterInfo">全部数据</span>
+</div>
+<div class="tbar" id="weeklyTabs"></div>
+<!-- 站点趋势图表 -->
+<div class="weekly-charts">
+<div class="chart-row">
+<div class="chart-box"><canvas id="weeklyTrendChart"></canvas></div>
+<div class="chart-box"><canvas id="weeklyROITrendChart"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="chart-box"><canvas id="weeklyConvTrendChart"></canvas></div>
+<div class="chart-box"><canvas id="weeklyClickTrendChart"></canvas></div>
+</div>
+</div>
+<div id="weeklyTableArea"></div>
+</div>
+</div>
+
+<!-- ========== 产品投放数据明细 ========== -->
+<div class="sec" id="sec-product">
+<div class="sh" onclick="tog('sec-product')"><div class="sh-l"><span class="si">&#128230;</span><span class="st">产品投放数据明细</span></div><span class="stg" id="tg-sec-product">&#9660;</span></div>
+<div class="sbd" id="bd-sec-product">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="productStart">
+<span>~</span>
+<input type="date" id="productEnd">
+<button class="btn btn-sm btn-p" onclick="applyProductFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearProductFilter()">清除</button>
+<span class="filter-info" id="productFilterInfo">全部数据</span>
+</div>
+<div class="tbar" id="productTabs"></div>
+<!-- 概览卡片 -->
+<div id="productOverview" class="overview-cards"></div>
+<!-- 看板图 -->
+<div class="product-charts">
+<div class="chart-row">
+<div class="chart-box"><canvas id="productSpendChart"></canvas></div>
+<div class="chart-box"><canvas id="productROIChart"></canvas></div>
+</div>
+</div>
+<div id="productTableArea"></div>
+</div>
+</div>
+
+<!-- ========== 预算与实际对比 ========== -->
+<div class="sec" id="sec-budget">
+<div class="sh" onclick="tog('sec-budget')"><div class="sh-l"><span class="si">&#128176;</span><span class="st">预算与实际对比</span></div><span class="stg" id="tg-sec-budget">&#9660;</span></div>
+<div class="sbd" id="bd-sec-budget">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="budgetStart">
+<span>~</span>
+<input type="date" id="budgetEnd">
+<button class="btn btn-sm btn-p" onclick="applyBudgetFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearBudgetFilter()">清除</button>
+<span class="filter-info" id="budgetFilterInfo">全部数据</span>
+</div>
+<div id="budgetTableArea"></div>
+</div>
+</div>
+
+<!-- ========== 重点产品数据对比 ========== -->
+<div class="sec" id="sec-productcmp">
+<div class="sh" onclick="tog('sec-productcmp')"><div class="sh-l"><span class="si">&#128270;</span><span class="st">重点产品数据对比</span></div><span class="stg" id="tg-sec-productcmp">&#9660;</span></div>
+<div class="sbd" id="bd-sec-productcmp">
+<div class="filter-bar" style="flex-wrap:wrap;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;background:#f0f4ff;padding:6px 12px;border-radius:6px">
+<span>&#127919; 周期A:</span>
+<input type="date" id="pcmpStartA">
+<span>~</span>
+<input type="date" id="pcmpEndA">
+</div>
+<div style="display:flex;align-items:center;gap:8px;background:#fff7ed;padding:6px 12px;border-radius:6px">
+<span>&#128200; 周期B:</span>
+<input type="date" id="pcmpStartB">
+<span>~</span>
+<input type="date" id="pcmpEndB">
+</div>
+<button class="btn btn-sm btn-p" onclick="applyPcmpFilter()">对比</button>
+<button class="btn btn-sm btn-s" onclick="clearPcmpFilter()">清除</button>
+</div>
+<div class="tbar" id="pcmpTabs"></div>
+<!-- 环比概览卡片 -->
+<div id="pcmpOverview" class="overview-cards"></div>
+<!-- 看板图 -->
+<div class="pcmp-charts">
+<div class="chart-row">
+<div class="chart-box"><canvas id="pcmpSpendChart"></canvas></div>
+<div class="chart-box"><canvas id="pcmpSalesChart"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="chart-box"><canvas id="pcmpROIChart"></canvas></div>
+<div class="chart-box"><canvas id="pcmpGrowthChart"></canvas></div>
+</div>
+</div>
+<!-- 数据明细表 -->
+<div id="pcmpTableArea"></div>
+</div>
+</div>
+
+<!-- ========== 站点对比看板 ========== -->
+<div class="sec" id="sec-charts">
+<div class="sh" onclick="tog('sec-charts')"><div class="sh-l"><span class="si">&#128202;</span><span class="st">站点对比看板</span></div><span class="stg" id="tg-sec-charts">&#9660;</span></div>
+<div class="sbd" id="bd-sec-charts">
+<div class="filter-bar">
+<span>&#128197; 日期:</span>
+<input type="date" id="chartStart">
+<span>~</span>
+<input type="date" id="chartEnd">
+<button class="btn btn-sm btn-p" onclick="applyChartFilter()">确认</button>
+<button class="btn btn-sm btn-s" onclick="clearChartFilter()">清除</button>
+<span class="filter-info" id="chartFilterInfo">全部数据</span>
+</div>
+<div class="tbar" id="chartTabs"></div>
+<div class="data-source-label" id="chartDataSource">&#128260; 数据来源: 等待同步数据...</div>
+<div class="cr"><div class="cb"><h4>&#128176; 各站点花费对比</h4><canvas id="chartSpend"></canvas></div><div class="cb"><h4>&#128200; 各站点销售额对比</h4><canvas id="chartSales"></canvas></div></div>
+<div class="cr"><div class="cb"><h4>&#127919; 各站点 ROI 对比</h4><canvas id="chartROI"></canvas></div><div class="cb"><h4>&#128722; 各站点转化次数对比</h4><canvas id="chartConv"></canvas></div></div>
+<div class="cr"><div class="cb"><h4>&#128433; 各站点点击率 (CTR)</h4><canvas id="chartCTR"></canvas></div><div class="cb"><h4>&#128181; 各站点 CPA 对比</h4><canvas id="chartCPA"></canvas></div></div>
+</div>
+</div>
+
+<!-- ========== 受众细分分析 ========== -->
+<div class="sec" id="sec-audience">
+<div class="sh" onclick="tog('sec-audience')"><div class="sh-l"><span class="si">&#128101;</span><span class="st">受众细分分析</span></div><span class="stg" id="tg-sec-audience">&#9660;</span></div>
+<div class="sbd" id="bd-sec-audience">
+<div class="filter-bar" style="flex-wrap:wrap;gap:8px;align-items:center">
+<span>&#128197; 日期:</span>
+<input type="date" id="audStart">
+<span>~</span>
+<input type="date" id="audEnd">
+<button class="btn btn-sm btn-p" onclick="fetchAudience()">&#128269; 获取受众数据</button>
+<button class="btn btn-sm btn-p" style="background:#f59e0b" onclick="fetchCustomerType()">&#128100; 新老客户</button>
+<button class="btn btn-sm btn-s" onclick="loadAudienceCache()">刷新</button>
+<span class="filter-info" id="audFilterInfo">暂无受众数据</span>
+</div>
+<div class="tbar" id="audTabs"></div>
+<span id="audTabInfo" style="font-size:.8rem;color:#64748b;margin-left:12px">汇总全部站点</span>
+<!-- 概览卡片 -->
+<div id="audOverview" class="overview-cards"></div>
+<!-- 看板图 -->
+<div class="aud-charts">
+<div class="chart-row chart-row-3">
+<div class="chart-box"><canvas id="audGenderChart"></canvas></div>
+<div class="chart-box"><canvas id="audAgeChart"></canvas></div>
+<div class="chart-box"><canvas id="audGenderPie"></canvas></div>
+</div>
+<div class="chart-row chart-row-3">
+<div class="chart-box"><canvas id="audTypeChart"></canvas></div>
+<div class="chart-box chart-box-wide" id="audSpendBox"><canvas id="audNewOldSpend"></canvas></div>
+</div>
+<div class="chart-row chart-row-2">
+<div class="chart-box"><canvas id="audNewOldROI"></canvas></div>
+</div>
+</div>
+</div>
+<div id="audCustTableArea"></div>
+<!-- 明细表 -->
+<div id="audTableArea"></div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+<div class="tc" id="toastC"></div>
+
+<script>
+/* ==================== 核心数据结构 ==================== */
+var SK = 'fb_weekly_report_modular_v1';
+var countries = ['英国','法国','德国','意大利'];
+var cColors = ['#3b82f6','#ef4444','#f59e0b','#8b5cf6'];
+
+// 统一状态管理
+var S = {
+  // 基础信息
+  dept: '独立站销售部',
+  reporter: '李阶熊',
+  reportDate: '',
+  month: 5,
+  
+  // 同步数据（核心数据源）
+  syncData: {
+    dateRange: {start: '', end: ''},
+    syncTime: '',
+    conversion: {sites: {}, summary: {}, campaigns: []},
+    traffic: {sites: {}, summary: {}, campaigns: []},
+    sites: []
+  },
+  
+  // 各模块筛选状态
+  filters: {
+    kpi: {start: '', end: ''},
+    sync: {start: '', end: ''},
+    weekly: {start: '', end: '', activeTab: '英国'},
+    product: {start: '', end: '', activeTab: '清库投放数据', page: 1},
+    budget: {start: '', end: ''},
+    chart: {start: '', end: '', activeTab: '全部'},
+    pcmp: {startA: '', endA: '', startB: '', endB: '', activeTab: '电子系列'},
+    audience: {start: '', end: ''}
+  },
+  
+  // 手动输入的数据
+  kpi: [
+    {name: '本月ROI完成情况', target: '', actual: '', note: ''},
+    {name: '本月销售额完成情况', target: '', actual: '', note: ''},
+    {name: '本月花费完成情况', target: '', actual: '', note: ''},
+    {name: '本月点击量完成情况', target: '', actual: '', note: ''}
+  ],
+  work: [{name:'', desc:'', result:'', value:'', note:''}],
+  issues: [{name:'', desc:'', root:'', plan:'', note:''}],
+  help: [{name:'', desc:'', need:'', dir:'', note:''}],
+  innovation: [{cat:'', desc:'', note:''}],
+  
+  // 预算数据
+  budget: {
+    '英国站': {planned_daily: 370, planned_monthly: 11100, target_daily_sales: 3700, target_roi: 10},
+    '法国站': {planned_daily: 230, planned_monthly: 6900, target_daily_sales: 2300, target_roi: 10},
+    '德国站': {planned_daily: 520, planned_monthly: 15600, target_daily_sales: 5200, target_roi: 10},
+    '意大利站': {planned_daily: 230, planned_monthly: 6900, target_daily_sales: 2300, target_roi: 10}
+  }
+};
+
+// 产品投放数据模板
+// 重点产品分类配置（名称 -> 匹配关键词）
+var PRODUCT_CATEGORIES = {
+  '电子系列': ['电子', 'electronics', 'electronic'],
+  'AMS Heater': ['heater', '加热器', 'ams heater'],
+  '树脂': ['树脂', 'resin', '光敏树脂'],
+  '250g装': ['250g', '250克'],
+  '工程系列': ['工程', 'engineering', '工程耗材'],
+  '干燥箱': ['干燥', 'dryer', 'dry', 'drying']
+};
+
+// 初始化产品数据（空数组，从FB同步数据动态匹配）
+var PRODUCT_DATA = {};
+Object.keys(PRODUCT_CATEGORIES).forEach(function(cat) {
+  PRODUCT_DATA[cat] = [];
+});
+
+/* ==================== 本地存储 ==================== */
+function save() {
+  // 保存配置到服务端
+  var config = {
+    dept: S.dept,
+    reporter: S.reporter,
+    reportDate: S.reportDate,
+    month: S.month,
+    filters: S.filters,
+    kpi: S.kpi,
+    work: S.work,
+    issues: S.issues,
+    help: S.help,
+    innovation: S.innovation,
+    budget: S.budget
+  };
+  fetch('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(config)
+  }).catch(function(e) {
+    // 保存失败时回退到 localStorage
+    try { localStorage.setItem(SK, JSON.stringify(config)); } catch(e2) {}
+  });
+}
+
+function loadConfig(callback) {
+  // 从服务端获取配置
+  fetch('/api/config').then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success && result.config) {
+      var c = result.config;
+      if (c.dept) S.dept = c.dept;
+      if (c.reporter) S.reporter = c.reporter;
+      if (c.reportDate !== undefined) S.reportDate = c.reportDate;
+      if (c.month !== undefined) S.month = c.month;
+      if (c.filters) S.filters = Object.assign(S.filters, c.filters);
+      if (c.kpi) S.kpi = c.kpi;
+      if (c.work) S.work = c.work;
+      if (c.issues) S.issues = c.issues;
+      if (c.help) S.help = c.help;
+      if (c.innovation) S.innovation = c.innovation;
+      if (c.budget) S.budget = Object.assign(S.budget, c.budget);
+    }
+    if (callback) callback();
+  }).catch(function(e) {
+    // 服务端失败时回退到 localStorage
+    try {
+      var s = localStorage.getItem(SK);
+      if (s) {
+        var d = JSON.parse(s);
+        if (d.dept) S.dept = d.dept;
+        if (d.reporter) S.reporter = d.reporter;
+        if (d.reportDate !== undefined) S.reportDate = d.reportDate;
+        if (d.month !== undefined) S.month = d.month;
+        if (d.filters) S.filters = Object.assign(S.filters, d.filters);
+        if (d.kpi) S.kpi = d.kpi;
+        if (d.work) S.work = d.work;
+        if (d.issues) S.issues = d.issues;
+        if (d.help) S.help = d.help;
+        if (d.innovation) S.innovation = d.innovation;
+        if (d.budget) S.budget = Object.assign(S.budget, d.budget);
+      }
+    } catch(e2) {}
+    if (callback) callback();
+  });
+}
+
+function loadSyncData(callback) {
+  // 从服务端获取同步数据
+  fetch('/api/data').then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success && result.data) {
+      var data = result.data;
+      S.syncData = {
+        dateRange: data.date_range || {start: '', end: ''},
+        syncTime: data.sync_time || '',
+        conversion: data.conversion || {sites: {}, summary: {}, campaigns: []},
+        traffic: data.traffic || {sites: {}, summary: {}, campaigns: []},
+        sites: data.sites || []
+      };
+      // 如果有同步数据，更新筛选日期为同步数据范围
+      if (S.syncData.dateRange.start && S.syncData.dateRange.end) {
+        var syncStart = S.syncData.dateRange.start;
+        var syncEnd = S.syncData.dateRange.end;
+        var filterIds = ['kpi', 'sync', 'weekly', 'product', 'budget', 'chart'];
+        filterIds.forEach(function(f) {
+          if (!S.filters[f].start) S.filters[f].start = syncStart;
+          if (!S.filters[f].end) S.filters[f].end = syncEnd;
+        });
+      }
+      if (callback) callback();
+    } else {
+      if (callback) callback();
+    }
+  }).catch(function(e) {
+    if (callback) callback();
+  });
+}
+
+/* ==================== 工具函数 ==================== */
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtMoney(v) { return '$' + Number(v||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtNum(v) { return Number(v||0).toLocaleString('en-US'); }
+function fmtPct(v) { return Number(v||0).toFixed(2) + '%'; }
+function roiClass(v) { return v >= 10 ? 'roi-high' : v >= 6 ? 'roi-mid' : 'roi-low'; }
+function growthHtml(curr, prev, inverse) {
+  if (!prev || prev === 0) return '<span style="color:var(--tm)">--</span>';
+  var pct = ((curr - prev) / prev * 100).toFixed(1);
+  var cls = pct >= 0 ? 'growth-up' : 'growth-down';
+  if (inverse) cls = pct >= 0 ? 'growth-down' : 'growth-up';
+  var arrow = pct >= 0 ? '&#9650;' : '&#9660;';
+  return '<span class="' + cls + '">' + arrow + ' ' + Math.abs(pct) + '%</span>';
+}
+
+function toast(msg, type) {
+  var c = document.getElementById('toastC');
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'ok');
+  var icons = {ok: '&#10003;', warn: '&#9888;', err: '&#10007;'};
+  t.innerHTML = '<span>' + (icons[type]||'') + '</span><span>' + msg + '</span>';
+  c.appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 3000);
+}
+
+/* ==================== 导航与折叠 ==================== */
+function tog(id) {
+  var b = document.getElementById('bd-' + id);
+  var t = document.getElementById('tg-' + id);
+  if (b.classList.contains('hide')) {
+    b.classList.remove('hide');
+    t.innerHTML = '&#9660;';
+  } else {
+    b.classList.add('hide');
+    t.innerHTML = '&#9654;';
+  }
+}
+
+function go(id) {
+  var el = document.getElementById(id);
+  if (el) {
+    var bd = document.getElementById('bd-' + id);
+    var tg = document.getElementById('tg-' + id);
+    if (bd && bd.classList.contains('hide')) {
+      bd.classList.remove('hide');
+      if (tg) tg.innerHTML = '&#9660;';
+    }
+    el.scrollIntoView({behavior:'smooth'});
+    // 更新导航激活状态
+    document.querySelectorAll('.nl').forEach(function(nl) { nl.classList.remove('active'); });
+    var nl = document.querySelector('.nl[onclick*="' + id + '"');
+    if (nl) nl.classList.add('active');
+  }
+}
+
+function onMonthChange() {
+  S.month = +document.getElementById('rMonth').value;
+  save();
+  toast('已切换到 ' + S.month + ' 月', 'ok');
+}
+
+/* ==================== 模块1: 报告头部 ==================== */
+function renderModule1() {
+  document.getElementById('hDept').value = S.dept || '';
+  document.getElementById('hReporter').value = S.reporter || '';
+  document.getElementById('hDate').value = S.reportDate || '';
+  if (!S.reportDate) {
+    var today = new Date();
+    S.reportDate = today.toISOString().split('T')[0];
+    document.getElementById('hDate').value = S.reportDate;
+    save();
+  }
+  renderHeaderInfo();
+}
+
+function renderHeaderInfo() {
+  var info = '当前报告: ' + (S.dept || '未填写部门') + ' | 报告人: ' + (S.reporter || '未填写') + ' | 日期: ' + (S.reportDate || '未选择');
+  if (S.syncData.dateRange.start && S.syncData.dateRange.end) {
+    info += ' | 数据范围: ' + S.syncData.dateRange.start + ' 至 ' + S.syncData.dateRange.end;
+  }
+  document.getElementById('headerInfoDisplay').textContent = info;
+}
+
+/* ==================== 模块2: 关键指标 ==================== */
+function applyKpiFilter() {
+  S.filters.kpi.start = document.getElementById('kpiStart').value;
+  S.filters.kpi.end = document.getElementById('kpiEnd').value;
+  save();
+  renderModule2();
+}
+
+function clearKpiFilter() {
+  document.getElementById('kpiStart').value = '';
+  document.getElementById('kpiEnd').value = '';
+  S.filters.kpi.start = '';
+  S.filters.kpi.end = '';
+  save();
+  renderModule2();
+}
+
+function renderModule2() {
+  var start = S.filters.kpi.start;
+  var end = S.filters.kpi.end;
+  var info = start && end ? start + ' ~ ' + end : '全部数据';
+  document.getElementById('kpiFilterInfo').textContent = info;
+  
+  // 如果有同步数据，自动填入实际值
+  var filteredData = getFilteredSyncData(start, end);
+  var totalSales = 0, totalSpend = 0, totalConversions = 0, totalClicks = 0;
+  filteredData.forEach(function(site) {
+    totalSales += site.sales || 0;
+    totalSpend += site.spend || 0;
+    totalConversions += site.conversions || 0;
+    totalClicks += site.clicks || 0;
+  });
+  var avgROI = totalSpend > 0 ? totalSales / totalSpend : 0;
+  
+  // 更新KPI实际值
+  S.kpi.forEach(function(k) {
+    if (k.name.includes('ROI') && avgROI > 0) k.actual = avgROI.toFixed(2);
+    if (k.name.includes('销售额') && totalSales > 0) k.actual = Math.round(totalSales).toString();
+    if (k.name.includes('花费') && totalSpend > 0) k.actual = Math.round(totalSpend).toString();
+    if (k.name.includes('点击量') && totalClicks > 0) k.actual = Math.round(totalClicks).toString();
+  });
+  
+  var tb = document.getElementById('kpiTb');
+  var h = '';
+  S.kpi.forEach(function(k, i) {
+    var badge = '';
+    if (k.target && k.actual) {
+      var r = parseFloat(k.actual) / parseFloat(k.target);
+      var p = (r * 100).toFixed(1) + '%';
+      badge = r >= 1 ? '<span class="badge badge-g">' + p + '</span>' : r >= 0.8 ? '<span class="badge badge-y">' + p + '</span>' : '<span class="badge badge-r">' + p + '</span>';
+    }
+    h += '<tr><td><input value="' + esc(k.name) + '" onchange="S.kpi[' + i + '].name=this.value;save()"></td>';
+    h += '<td><input type="number" placeholder="目标" value="' + esc(k.target) + '" onchange="S.kpi[' + i + '].target=this.value;save();renderModule2()"></td>';
+    h += '<td><input type="number" placeholder="实际值" value="' + esc(k.actual) + '" onchange="S.kpi[' + i + '].actual=this.value;save();renderModule2()"></td>';
+    h += '<td>' + badge + '</td>';
+    h += '<td><input value="' + esc(k.note) + '" onchange="S.kpi[' + i + '].note=this.value;save()"></td>';
+    h += '<td class="ra"><button onclick="delRow(\'kpi\',' + i + ')">删除</button></td></tr>';
+  });
+  tb.innerHTML = h;
+}
+
+/* ==================== 模块3-6: 动态表格 ==================== */
+var TABLE_FIELDS = {
+  work: ['name','desc','result','value','note'],
+  issues: ['name','desc','root','plan','note'],
+  help: ['name','desc','need','dir','note'],
+  innovation: ['cat','desc','note'],
+  kpi: ['name','target','actual','note']
+};
+
+// 需要多行文本框的字段（描述类）
+var TEXTAREA_FIELDS = {
+  work: ['desc', 'result', 'value', 'note'],
+  issues: ['desc', 'root', 'plan', 'note'],
+  help: ['desc', 'need', 'dir', 'note'],
+  innovation: ['desc', 'note'],
+  kpi: ['note']
+};
+
+function renderDynTable(tid, flds) {
+  var tb = document.getElementById(tid + 'Tb');
+  var d = S[tid];
+  var taFlds = TEXTAREA_FIELDS[tid] || [];
+  var h = '';
+  d.forEach(function(row, i) {
+    h += '<tr>';
+    flds.forEach(function(f) {
+      var val = row[f] || '';
+      if (taFlds.indexOf(f) >= 0) {
+        // 多行文本框
+        h += '<td><textarea rows="3" onchange="S.' + tid + '[' + i + '].' + f + '=this.value;save()">' + esc(val) + '</textarea></td>';
+      } else {
+        // 单行输入框
+        h += '<td><input value="' + esc(val) + '" onchange="S.' + tid + '[' + i + '].' + f + '=this.value;save()"></td>';
+      }
+    });
+    h += '<td class="ra"><button onclick="delRow(\'' + tid + '\',' + i + ')">删除</button></td></tr>';
+  });
+  tb.innerHTML = h;
+}
+
+function addRow(t) {
+  var flds = TABLE_FIELDS[t];
+  if (!flds) return;
+  var o = {};
+  flds.forEach(function(f) { o[f] = ''; });
+  S[t].push(o);
+  save();
+  if (t === 'kpi') renderModule2();
+  else renderDynTable(t, flds);
+}
+
+function delRow(t, i) {
+  if (S[t].length <= 1) { toast('至少保留一行', 'warn'); return; }
+  S[t].splice(i, 1);
+  save();
+  var flds = TABLE_FIELDS[t];
+  if (t === 'kpi') renderModule2();
+  else if (flds) renderDynTable(t, flds);
+}
+
+/* ==================== 数据筛选工具函数 ==================== */
+function getFilteredConversionData(start, end) {
+  var convData = S.syncData.conversion;
+  if (!convData || !convData.sites) return [];
+  
+  var result = [];
+  Object.keys(convData.sites).forEach(function(name) {
+    var site = convData.sites[name];
+    if (!site || !site.daily_data) return;
+    
+    var filteredDaily = site.daily_data.filter(function(d) {
+      if (start && d.date < start) return false;
+      if (end && d.date > end) return false;
+      return true;
+    });
+    
+    if (filteredDaily.length === 0) return;
+    
+    // 汇总
+    var summary = summarizeDaily(filteredDaily);
+    result.push({
+      name: name,
+      daily_data: filteredDaily,
+      spend: summary.spend,
+      sales: summary.sales,
+      conversions: summary.conversions,
+      cpa: summary.cpa,
+      roi: summary.roi,
+      clicks: summary.clicks,
+      impressions: summary.impressions,
+      ctr: summary.ctr,
+      cvr: summary.cvr
+    });
+  });
+  return result;
+}
+
+function getFilteredTrafficData(start, end) {
+  // 获取流量广告数据
+  var trafficData = S.syncData.traffic;
+  if (!trafficData || !trafficData.sites) return [];
+  
+  var result = [];
+  Object.keys(trafficData.sites).forEach(function(name) {
+    var site = trafficData.sites[name];
+    if (!site || !site.daily_data) return;
+    
+    // 按日期筛选
+    var filteredDaily = site.daily_data.filter(function(d) {
+      if (start && d.date < start) return false;
+      if (end && d.date > end) return false;
+      return true;
+    });
+    
+    if (filteredDaily.length === 0) return;
+    
+    // 汇总
+    var total = {spend: 0, clicks: 0, impressions: 0};
+    filteredDaily.forEach(function(d) {
+      total.spend += d.spend || 0;
+      total.clicks += d.clicks || 0;
+      total.impressions += d.impressions || 0;
+    });
+    
+    result.push({
+      name: name,
+      daily_data: filteredDaily,
+      spend: Math.round(total.spend * 100) / 100,
+      clicks: total.clicks,
+      impressions: total.impressions,
+      ctr: total.impressions > 0 ? Math.round(total.clicks / total.impressions * 10000) / 100 : 0,
+      cpc: total.clicks > 0 ? Math.round(total.spend / total.clicks * 100) / 100 : 0
+    });
+  });
+  return result;
+}
+
+function getFilteredSyncData(start, end) {
+  // 基于每日明细数据筛选，然后汇总
+  var allDaily = [];
+  S.syncData.sites.forEach(function(site) {
+    var daily = site.daily_data || [];
+    daily.forEach(function(d) {
+      allDaily.push(Object.assign({}, d, {siteName: site.name}));
+    });
+  });
+  
+  if (!start && !end) return S.syncData.sites;
+  
+  // 按日期筛选每日数据
+  var filtered = allDaily.filter(function(d) {
+    if (start && d.date < start) return false;
+    if (end && d.date > end) return false;
+    return true;
+  });
+  
+  if (filtered.length === 0) return [];
+  
+  // 按站点汇总筛选后的数据
+  var siteMap = {};
+  filtered.forEach(function(d) {
+    if (!siteMap[d.siteName]) {
+      siteMap[d.siteName] = {name: d.siteName, spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0};
+    }
+    var s = siteMap[d.siteName];
+    s.spend += d.spend || 0;
+    s.sales += d.sales || d.purchase_value || 0;
+    s.conversions += d.conversions || d.purchases || 0;
+    s.clicks += d.clicks || 0;
+    s.impressions += d.impressions || 0;
+  });
+  
+  // 计算衍生指标
+  return Object.values(siteMap).map(function(s) {
+    s.cpa = s.conversions > 0 ? s.spend / s.conversions : 0;
+    s.roi = s.spend > 0 ? s.sales / s.spend : 0;
+    s.ctr = s.impressions > 0 ? (s.clicks / s.impressions * 100) : 0;
+    s.cvr = s.clicks > 0 ? (s.conversions / s.clicks * 100) : 0;
+    s.spend = Math.round(s.spend * 100) / 100;
+    s.sales = Math.round(s.sales * 100) / 100;
+    s.cpa = Math.round(s.cpa * 100) / 100;
+    s.roi = Math.round(s.roi * 100) / 100;
+    s.ctr = Math.round(s.ctr * 100) / 100;
+    s.cvr = Math.round(s.cvr * 100) / 100;
+    return s;
+  });
+}
+
+function getFilteredDailyBySite(siteName, start, end) {
+  // 获取指定站点的每日明细数据（用于周度数据对比等）
+  // 先尝试从转化广告数据获取
+  var convSites = S.syncData.conversion ? S.syncData.conversion.sites : {};
+  var site = convSites[siteName];
+  if (site && site.daily_data) {
+    return site.daily_data.filter(function(d) {
+      if (start && d.date < start) return false;
+      if (end && d.date > end) return false;
+      return true;
+    });
+  }
+  return [];
+}
+
+function summarizeDaily(dailyList) {
+  // 将每日明细汇总为一条记录
+  if (!dailyList || dailyList.length === 0) return null;
+  var total = {spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0};
+  dailyList.forEach(function(d) {
+    total.spend += d.spend || 0;
+    total.sales += d.sales || d.purchase_value || 0;
+    total.conversions += d.conversions || d.purchases || 0;
+    total.clicks += d.clicks || 0;
+    total.impressions += d.impressions || 0;
+  });
+  var days = dailyList.length;
+  total.cpa = total.conversions > 0 ? total.spend / total.conversions : 0;
+  total.roi = total.spend > 0 ? total.sales / total.spend : 0;
+  total.ctr = total.impressions > 0 ? (total.clicks / total.impressions * 100) : 0;
+  total.cvr = total.clicks > 0 ? (total.conversions / total.clicks * 100) : 0;
+  total.days = days;
+  total.daily_spend = Math.round(total.spend / days * 100) / 100;
+  total.daily_sales = Math.round(total.sales / days * 100) / 100;
+  total.spend = Math.round(total.spend * 100) / 100;
+  total.sales = Math.round(total.sales * 100) / 100;
+  total.cpa = Math.round(total.cpa * 100) / 100;
+  total.roi = Math.round(total.roi * 100) / 100;
+  total.ctr = Math.round(total.ctr * 100) / 100;
+  total.cvr = Math.round(total.cvr * 100) / 100;
+  return total;
+}
+
+function filterDataByDate(data, start, end) {
+  if (!start && !end) return data;
+  return data.filter(function(item) {
+    var itemDate = parseDate(item.date);
+    if (!itemDate) return true;
+    if (start && itemDate < new Date(start)) return false;
+    if (end && itemDate > new Date(end)) return false;
+    return true;
+  });
+}
+
+function parseDate(dateStr) {
+  if (!dateStr) return null;
+  // 支持格式: 0406-0412, 2026-05-01, 05-01 等
+  var m = dateStr.match(/(\d{2})(\d{2})-(\d{2})(\d{2})/);
+  if (m) {
+    var year = new Date().getFullYear();
+    return new Date(year, parseInt(m[1]) - 1, parseInt(m[2]));
+  }
+  var d = new Date(dateStr);
+  return isNaN(d) ? null : d;
+}
+
+/* ==================== 模块7: FB同步数据概览 ==================== */
+function applySyncFilter() {
+  S.filters.sync.start = document.getElementById('syncStart').value;
+  S.filters.sync.end = document.getElementById('syncEnd').value;
+  save();
+  renderModule7();
+}
+
+function clearSyncFilter() {
+  document.getElementById('syncStart').value = '';
+  document.getElementById('syncEnd').value = '';
+  S.filters.sync.start = '';
+  S.filters.sync.end = '';
+  save();
+  renderModule7();
+}
+
+function switchSyncType(type) {
+  S.filters.sync.type = type;
+  document.getElementById('syncTypeConv').classList.toggle('active', type === 'conversion');
+  document.getElementById('syncTypeTraffic').classList.toggle('active', type === 'traffic');
+  save();
+  renderModule7();
+}
+
+function renderModule7() {
+  var cardsEl = document.getElementById('syncCards');
+  var phEl = document.getElementById('syncPlaceholder');
+  var overviewEl = document.getElementById('syncOverview');
+  
+  var start = S.filters.sync.start;
+  var end = S.filters.sync.end;
+  var adType = S.filters.sync.type || 'conversion';
+  var info = start && end ? start + ' ~ ' + end : (S.syncData.dateRange.start ? S.syncData.dateRange.start + ' ~ ' + S.syncData.dateRange.end : '全部数据');
+  document.getElementById('syncFilterInfo').textContent = info;
+  
+  var sites = adType === 'traffic' 
+    ? getFilteredTrafficData(start, end) 
+    : getFilteredConversionData(start, end);
+  
+  if (!S.syncData.syncTime || sites.length === 0) {
+    cardsEl.innerHTML = '';
+    if (overviewEl) overviewEl.innerHTML = '';
+    phEl.style.display = 'block';
+    return;
+  }
+  
+  phEl.style.display = 'none';
+  
+  // 计算总体数据
+  var totalSpend = 0, totalSales = 0, totalConversions = 0, totalClicks = 0, totalImpressions = 0;
+  sites.forEach(function(site) {
+    totalSpend += site.spend || 0;
+    totalSales += site.sales || 0;
+    totalConversions += site.conversions || 0;
+    totalClicks += site.clicks || 0;
+    totalImpressions += site.impressions || 0;
+  });
+  var avgROI = totalSpend > 0 ? totalSales / totalSpend : 0;
+  var avgCPA = totalConversions > 0 ? totalSpend / totalConversions : 0;
+  var avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0;
+  
+  // 渲染总体概览卡片
+  if (overviewEl) {
+    var ovHtml = '';
+    ovHtml += '<div class="overview-card"><div class="ov-label">总花费</div><div class="ov-value">' + fmtMoney(totalSpend) + '</div></div>';
+    if (adType === 'conversion') {
+      ovHtml += '<div class="overview-card"><div class="ov-label">总销售额</div><div class="ov-value">' + fmtMoney(totalSales) + '</div></div>';
+      ovHtml += '<div class="overview-card"><div class="ov-label">总ROI</div><div class="ov-value">' + avgROI.toFixed(2) + '</div></div>';
+      ovHtml += '<div class="overview-card"><div class="ov-label">总转化</div><div class="ov-value">' + fmtNum(totalConversions) + '</div></div>';
+    } else {
+      ovHtml += '<div class="overview-card"><div class="ov-label">总点击</div><div class="ov-value">' + fmtNum(totalClicks) + '</div></div>';
+      ovHtml += '<div class="overview-card"><div class="ov-label">总展示</div><div class="ov-value">' + fmtNum(totalImpressions) + '</div></div>';
+      ovHtml += '<div class="overview-card"><div class="ov-label">平均CTR</div><div class="ov-value">' + avgCTR.toFixed(2) + '%</div></div>';
+    }
+    overviewEl.innerHTML = ovHtml;
+  }
+  
+  // 渲染站点对比图表
+  renderSyncCharts(sites, adType);
+  
+  // 渲染站点详细卡片
+  var h = '';
+  sites.forEach(function(site) {
+    h += '<div class="site-card">';
+    h += '<h4>' + esc(site.name) + '</h4>';
+    h += '<div class="date-range">' + (S.syncData.dateRange.start || '--') + ' 至 ' + (S.syncData.dateRange.end || '--') + '</div>';
+    h += '<div class="metrics">';
+    h += '<div class="metric"><div class="ml">花费</div><div class="mv">' + fmtMoney(site.spend) + '</div></div>';
+    
+    if (adType === 'traffic') {
+      h += '<div class="metric"><div class="ml">点击次数</div><div class="mv">' + fmtNum(site.clicks) + '</div></div>';
+      h += '<div class="metric"><div class="ml">展示次数</div><div class="mv">' + fmtNum(site.impressions) + '</div></div>';
+      h += '<div class="metric"><div class="ml">CTR</div><div class="mv">' + (site.ctr || 0).toFixed(2) + '%</div></div>';
+      h += '<div class="metric"><div class="ml">CPC</div><div class="mv">' + fmtMoney(site.cpc || 0) + '</div></div>';
+    } else {
+      h += '<div class="metric"><div class="ml">销售额</div><div class="mv">' + fmtMoney(site.sales) + '</div></div>';
+      h += '<div class="metric"><div class="ml">转化次数</div><div class="mv">' + fmtNum(site.conversions) + '</div></div>';
+      h += '<div class="metric"><div class="ml">CPA</div><div class="mv">' + fmtMoney(site.cpa) + '</div></div>';
+      h += '<div class="metric"><div class="ml">ROI</div><div class="mv ' + roiClass(site.roi) + '">' + (site.roi || 0).toFixed(2) + '</div></div>';
+      h += '<div class="metric"><div class="ml">CTR</div><div class="mv">' + (site.ctr || 0).toFixed(2) + '%</div></div>';
+      h += '<div class="metric"><div class="ml">CVR</div><div class="mv">' + (site.cvr || 0).toFixed(2) + '%</div></div>';
+      h += '<div class="metric"><div class="ml">点击次数</div><div class="mv">' + fmtNum(site.clicks) + '</div></div>';
+      h += '<div class="metric"><div class="ml">展示次数</div><div class="mv">' + fmtNum(site.impressions) + '</div></div>';
+    }
+    h += '</div></div>';
+  });
+  cardsEl.innerHTML = h;
+}
+
+// 渲染FB同步概览图表
+function renderSyncCharts(sites, adType) {
+  var labels = sites.map(function(s) { return s.name.replace('站', ''); });
+  
+  // 花费对比图
+  var spendCtx = document.getElementById('syncSpendChart');
+  if (spendCtx) {
+    if (window.syncSpendChartInst) window.syncSpendChartInst.destroy();
+    window.syncSpendChartInst = new Chart(spendCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '花费 ($)',
+          data: sites.map(function(s) { return s.spend; }),
+          backgroundColor: '#3b82f6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: '各站点花费对比' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  if (adType === 'conversion') {
+    // 销售额对比图
+    var salesCtx = document.getElementById('syncSalesChart');
+    if (salesCtx) {
+      if (window.syncSalesChartInst) window.syncSalesChartInst.destroy();
+      window.syncSalesChartInst = new Chart(salesCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '销售额 ($)',
+            data: sites.map(function(s) { return s.sales; }),
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点销售额对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+    
+    // ROI对比图
+    var roiCtx = document.getElementById('syncROIChart');
+    if (roiCtx) {
+      if (window.syncROIChartInst) window.syncROIChartInst.destroy();
+      var roiData = sites.map(function(s) { return s.roi || 0; });
+      var roiColors = roiData.map(function(v) { return v >= 10 ? '#10b981' : v >= 6 ? '#f59e0b' : '#ef4444'; });
+      window.syncROIChartInst = new Chart(roiCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'ROI',
+            data: roiData,
+            backgroundColor: roiColors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点ROI对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+    
+    // 转化次数对比图
+    var convCtx = document.getElementById('syncConvChart');
+    if (convCtx) {
+      if (window.syncConvChartInst) window.syncConvChartInst.destroy();
+      window.syncConvChartInst = new Chart(convCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '转化次数',
+            data: sites.map(function(s) { return s.conversions; }),
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点转化次数对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  } else {
+    // 流量广告：展示点击和展示次数
+    var salesCtx = document.getElementById('syncSalesChart');
+    if (salesCtx) {
+      if (window.syncSalesChartInst) window.syncSalesChartInst.destroy();
+      window.syncSalesChartInst = new Chart(salesCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '点击次数',
+            data: sites.map(function(s) { return s.clicks; }),
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点点击次数对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+    
+    var roiCtx = document.getElementById('syncROIChart');
+    if (roiCtx) {
+      if (window.syncROIChartInst) window.syncROIChartInst.destroy();
+      window.syncROIChartInst = new Chart(roiCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '展示次数',
+            data: sites.map(function(s) { return s.impressions; }),
+            backgroundColor: '#f59e0b',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点展示次数对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+    
+    var convCtx = document.getElementById('syncConvChart');
+    if (convCtx) {
+      if (window.syncConvChartInst) window.syncConvChartInst.destroy();
+      window.syncConvChartInst = new Chart(convCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'CTR (%)',
+            data: sites.map(function(s) { return s.ctr || 0; }),
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, title: { display: true, text: '各站点CTR对比' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  }
+}
+
+/* ==================== 模块8: 各站点数据对比 ==================== */
+function clearWeeklyFilter() {
+  document.getElementById('weeklyStart').value = '';
+  document.getElementById('weeklyEnd').value = '';
+  S.filters.weekly.start = '';
+  S.filters.weekly.end = '';
+  save();
+  renderWeeklyModule();
+}
+
+function applyWeeklyFilter() {
+  S.filters.weekly.start = document.getElementById('weeklyStart').value;
+  S.filters.weekly.end = document.getElementById('weeklyEnd').value;
+  save();
+  renderWeeklyModule();
+}
+
+function renderWeeklyTabs() {
+  var tabs = document.getElementById('weeklyTabs');
+  var h = '';
+  countries.forEach(function(c) {
+    h += '<button class="tbtn' + (S.filters.weekly.activeTab === c ? ' active' : '') + '" onclick="switchWeeklyTab(\'' + c + '\')">' + c + '</button>';
+  });
+  tabs.innerHTML = h;
+}
+
+function switchWeeklyTab(c) {
+  S.filters.weekly.activeTab = c;
+  save();
+  renderWeeklyTabs();
+  renderWeeklyCharts();
+  renderWeeklyTable();
+}
+
+function renderWeeklyModule() {
+  var start = document.getElementById('weeklyStart').value;
+  var end = document.getElementById('weeklyEnd').value;
+  S.filters.weekly.start = start;
+  S.filters.weekly.end = end;
+  save();
+  
+  var info = start && end ? start + ' ~ ' + end : '全部数据';
+  document.getElementById('weeklyFilterInfo').textContent = info;
+  
+  renderWeeklyTabs();
+  renderWeeklyCharts();
+  renderWeeklyTable();
+}
+
+function renderWeeklyCharts() {
+  var start = S.filters.weekly.start;
+  var end = S.filters.weekly.end;
+  var country = S.filters.weekly.activeTab;
+  var siteMapping = {'英国': '英国站', '法国': '法国站', '德国': '德国站', '意大利': '意大利站'};
+  var siteName = siteMapping[country];
+  
+  // 获取该站点的每日明细数据
+  var daily = getFilteredDailyBySite(siteName, start, end);
+  
+  if (daily.length === 0) return;
+  
+  // 按日期排序
+  daily.sort(function(a, b) { return a.date.localeCompare(b.date); });
+  
+  var labels = daily.map(function(d) { return d.date.slice(5); }); // 只显示月-日
+  var spendData = daily.map(function(d) { return d.spend || 0; });
+  var salesData = daily.map(function(d) { return d.sales || d.purchase_value || 0; });
+  var roiData = daily.map(function(d) { 
+    var s = d.sales || d.purchase_value || 0;
+    return d.spend > 0 ? s / d.spend : 0;
+  });
+  var convData = daily.map(function(d) { return d.conversions || d.purchases || 0; });
+  var clickData = daily.map(function(d) { return d.clicks || 0; });
+  
+  // 花费与销售额趋势图
+  var trendCtx = document.getElementById('weeklyTrendChart');
+  if (trendCtx) {
+    if (window.weeklyTrendChartInst) window.weeklyTrendChartInst.destroy();
+    window.weeklyTrendChartInst = new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: '花费 ($)', data: spendData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 },
+          { label: '销售额 ($)', data: salesData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' }, title: { display: true, text: country + ' - 花费与销售额趋势' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // ROI趋势图
+  var roiCtx = document.getElementById('weeklyROITrendChart');
+  if (roiCtx) {
+    if (window.weeklyROIChartInst) window.weeklyROIChartInst.destroy();
+    window.weeklyROIChartInst = new Chart(roiCtx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'ROI',
+          data: roiData,
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139,92,246,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: roiData.map(function(v) { return v >= 10 ? '#10b981' : v >= 6 ? '#f59e0b' : '#ef4444'; })
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: country + ' - ROI趋势' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // 转化次数趋势图
+  var convCtx = document.getElementById('weeklyConvTrendChart');
+  if (convCtx) {
+    if (window.weeklyConvChartInst) window.weeklyConvChartInst.destroy();
+    window.weeklyConvChartInst = new Chart(convCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '转化次数',
+          data: convData,
+          backgroundColor: '#f59e0b',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: country + ' - 每日转化次数' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // 点击次数趋势图
+  var clickCtx = document.getElementById('weeklyClickTrendChart');
+  if (clickCtx) {
+    if (window.weeklyClickChartInst) window.weeklyClickChartInst.destroy();
+    window.weeklyClickChartInst = new Chart(clickCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '点击次数',
+          data: clickData,
+          backgroundColor: '#06b6d4',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: country + ' - 每日点击次数' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+function renderWeeklyTable() {
+  var country = S.filters.weekly.activeTab;
+  var area = document.getElementById('weeklyTableArea');
+  var start = S.filters.weekly.start;
+  var end = S.filters.weekly.end;
+  
+  var siteMapping = {'英国': '英国站', '法国': '法国站', '德国': '德国站', '意大利': '意大利站'};
+  var siteName = siteMapping[country];
+  
+  // 获取该站点的每日明细数据并按日期筛选
+  var daily = getFilteredDailyBySite(siteName, start, end);
+  
+  if (daily.length === 0) {
+    area.innerHTML = '<div class="empty-state"><p>暂无数据</p><p>请先同步FB数据或调整日期筛选</p></div>';
+    return;
+  }
+  
+  // 汇总
+  var summary = summarizeDaily(daily);
+  
+  var h = '<div class="tbl-wrap"><table><thead><tr><th>日期</th><th>花费</th><th>日均花费</th><th>销售额</th><th>日均销售额</th><th>转化次数</th><th>CPA</th><th>ROI</th><th>点击次数</th><th>展示次数</th><th>CTR</th><th>CVR</th></tr></thead><tbody>';
+  
+  daily.forEach(function(d) {
+    var daySales = d.sales || d.purchase_value || 0;
+    var dayConv = d.conversions || d.purchases || 0;
+    var dayCpa = d.cpa || (dayConv > 0 ? d.spend / dayConv : 0);
+    var dayRoi = d.roi || (d.spend > 0 ? daySales / d.spend : 0);
+    var dayCtr = d.ctr || (d.impressions > 0 ? (d.clicks / d.impressions * 100) : 0);
+    var dayCvr = d.cvr || (d.clicks > 0 ? (dayConv / d.clicks * 100) : 0);
+    h += '<tr><td>' + d.date + '</td>';
+    h += '<td>' + fmtMoney(d.spend) + '</td>';
+    h += '<td>' + fmtMoney(d.spend) + '</td>';
+    h += '<td>' + fmtMoney(daySales) + '</td>';
+    h += '<td>' + fmtMoney(daySales) + '</td>';
+    h += '<td>' + fmtNum(dayConv) + '</td>';
+    h += '<td>' + fmtMoney(dayCpa) + '</td>';
+    h += '<td><strong class="' + roiClass(dayRoi) + '">' + dayRoi.toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtNum(d.clicks) + '</td>';
+    h += '<td>' + fmtNum(d.impressions) + '</td>';
+    h += '<td>' + dayCtr.toFixed(2) + '%</td>';
+    h += '<td>' + dayCvr.toFixed(2) + '%</td></tr>';
+  });
+  
+  // 汇总行
+  h += '<tr class="summary-row"><td>汇总 (' + summary.days + '天)</td>';
+  h += '<td>' + fmtMoney(summary.spend) + '</td>';
+  h += '<td>' + fmtMoney(summary.daily_spend) + '</td>';
+  h += '<td>' + fmtMoney(summary.sales) + '</td>';
+  h += '<td>' + fmtMoney(summary.daily_sales) + '</td>';
+  h += '<td>' + fmtNum(summary.conversions) + '</td>';
+  h += '<td>' + fmtMoney(summary.cpa) + '</td>';
+  h += '<td class="' + roiClass(summary.roi) + '">' + summary.roi.toFixed(2) + '</td>';
+  h += '<td>' + fmtNum(summary.clicks) + '</td>';
+  h += '<td>' + fmtNum(summary.impressions) + '</td>';
+  h += '<td>' + summary.ctr.toFixed(2) + '%</td>';
+  h += '<td>' + summary.cvr.toFixed(2) + '%</td></tr>';
+  
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
+}
+
+/* ==================== 模块9: 产品投放数据明细 ==================== */
+function clearProductFilter() {
+  document.getElementById('productStart').value = '';
+  document.getElementById('productEnd').value = '';
+  S.filters.product.start = '';
+  S.filters.product.end = '';
+  save();
+  renderProductModule();
+}
+
+function applyProductFilter() {
+  S.filters.product.start = document.getElementById('productStart').value;
+  S.filters.product.end = document.getElementById('productEnd').value;
+  save();
+  renderProductModule();
+}
+
+function getProductDataFromSync(category, start, end) {
+  // 从FB同步数据中获取指定产品分类的数据
+  var keywords = PRODUCT_CATEGORIES[category] || [];
+  if (keywords.length === 0) return [];
+  
+  var result = [];
+  var siteMapping = {'英国站': '英国', '法国站': '法国', '德国站': '德国', '意大利站': '意大利'};
+  
+  // 从转化广告数据中匹配
+  var convData = S.syncData.conversion;
+  if (convData && convData.campaigns) {
+    convData.campaigns.forEach(function(camp) {
+      var campName = (camp.campaign || '').toLowerCase();
+      var matched = keywords.some(function(kw) {
+        return campName.indexOf(kw.toLowerCase()) !== -1;
+      });
+      
+      if (matched) {
+        // 应用日期筛选
+        if (start && camp.date < start) return;
+        if (end && camp.date > end) return;
+        
+        // 找到对应的站点
+        var siteName = camp.siteName || '';
+        var country = siteMapping[siteName] || '未知';
+        
+        result.push({
+          country: country,
+          date: camp.date,
+          campaign: camp.campaign,
+          spend: camp.spend,
+          sales: camp.purchase_value,
+          conversions: camp.purchases,
+          cpa: camp.cpa,
+          roi: camp.roi,
+          clicks: camp.clicks,
+          impressions: camp.impressions,
+          ctr: camp.ctr,
+          cvr: camp.cvr
+        });
+      }
+    });
+  }
+  
+  return result;
+}
+
+function renderProductTabs() {
+  var tabs = document.getElementById('productTabs');
+  var prods = Object.keys(PRODUCT_CATEGORIES);
+  var h = '';
+  prods.forEach(function(p) {
+    h += '<button class="tbtn' + (S.filters.product.activeTab === p ? ' active' : '') + '" onclick="switchProductTab(\'' + p + '\')">' + p + '</button>';
+  });
+  tabs.innerHTML = h;
+}
+
+function switchProductTab(p) {
+  S.filters.product.activeTab = p;
+  S.filters.product.page = 1; // 切换产品时重置页码
+  save();
+  renderProductTabs();
+  renderProductOverview();
+  renderProductCharts();
+  renderProductTable();
+}
+
+function renderProductModule() {
+  var start = document.getElementById('productStart').value;
+  var end = document.getElementById('productEnd').value;
+  S.filters.product.start = start;
+  S.filters.product.end = end;
+  S.filters.product.page = 1; // 重置页码
+  save();
+  
+  var info = start && end ? start + ' ~ ' + end : '全部数据';
+  document.getElementById('productFilterInfo').textContent = info;
+  
+  renderProductTabs();
+  renderProductOverview();
+  renderProductCharts();
+  renderProductTable();
+}
+
+function renderProductOverview() {
+  var prod = S.filters.product.activeTab;
+  var start = S.filters.product.start;
+  var end = S.filters.product.end;
+  var data = getProductDataFromSync(prod, start, end);
+  var overviewEl = document.getElementById('productOverview');
+  
+  if (!overviewEl || data.length === 0) {
+    if (overviewEl) overviewEl.innerHTML = '';
+    return;
+  }
+  
+  var totalSpend = 0, totalSales = 0, totalConversions = 0, totalClicks = 0;
+  data.forEach(function(row) {
+    totalSpend += parseFloat(row.spend) || 0;
+    totalSales += parseFloat(row.sales) || 0;
+    totalConversions += parseInt(row.conversions) || 0;
+    totalClicks += parseInt(row.clicks) || 0;
+  });
+  var avgROI = totalSpend > 0 ? totalSales / totalSpend : 0;
+  
+  var h = '';
+  h += '<div class="overview-card"><div class="ov-label">总花费</div><div class="ov-value">' + fmtMoney(totalSpend) + '</div></div>';
+  h += '<div class="overview-card"><div class="ov-label">总销售额</div><div class="ov-value">' + fmtMoney(totalSales) + '</div></div>';
+  h += '<div class="overview-card"><div class="ov-label">平均ROI</div><div class="ov-value">' + avgROI.toFixed(2) + '</div></div>';
+  h += '<div class="overview-card"><div class="ov-label">总转化</div><div class="ov-value">' + fmtNum(totalConversions) + '</div></div>';
+  overviewEl.innerHTML = h;
+}
+
+function renderProductCharts() {
+  var prod = S.filters.product.activeTab;
+  var start = S.filters.product.start;
+  var end = S.filters.product.end;
+  var data = getProductDataFromSync(prod, start, end);
+  
+  if (data.length === 0) return;
+  
+  // 按国家汇总
+  var countryData = {};
+  data.forEach(function(row) {
+    var c = row.country || '未知';
+    if (!countryData[c]) {
+      countryData[c] = { spend: 0, sales: 0, conversions: 0 };
+    }
+    countryData[c].spend += parseFloat(row.spend) || 0;
+    countryData[c].sales += parseFloat(row.sales) || 0;
+    countryData[c].conversions += parseInt(row.conversions) || 0;
+  });
+  
+  var labels = Object.keys(countryData);
+  var spendData = labels.map(function(c) { return countryData[c].spend; });
+  var roiData = labels.map(function(c) { 
+    return countryData[c].spend > 0 ? countryData[c].sales / countryData[c].spend : 0;
+  });
+  
+  // 花费对比图
+  var spendCtx = document.getElementById('productSpendChart');
+  if (spendCtx) {
+    if (window.productSpendChartInst) window.productSpendChartInst.destroy();
+    window.productSpendChartInst = new Chart(spendCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '花费 ($)',
+          data: spendData,
+          backgroundColor: '#3b82f6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: prod + ' - 各国家花费对比' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // ROI对比图
+  var roiCtx = document.getElementById('productROIChart');
+  if (roiCtx) {
+    if (window.productROIChartInst) window.productROIChartInst.destroy();
+    var roiColors = roiData.map(function(v) { return v >= 10 ? '#10b981' : v >= 6 ? '#f59e0b' : '#ef4444'; });
+    window.productROIChartInst = new Chart(roiCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'ROI',
+          data: roiData,
+          backgroundColor: roiColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, title: { display: true, text: prod + ' - 各国家ROI对比' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+function renderProductTable() {
+  var prod = S.filters.product.activeTab;
+  var area = document.getElementById('productTableArea');
+  
+  var start = S.filters.product.start;
+  var end = S.filters.product.end;
+  var page = S.filters.product.page || 1;
+  var pageSize = 10;
+  
+  var data = getProductDataFromSync(prod, start, end);
+  
+  if (data.length === 0) {
+    area.innerHTML = '<div class="empty-state"><p>暂无数据</p><p>该日期范围内未找到匹配「' + prod + '」的广告系列数据</p></div>';
+    return;
+  }
+  
+  // 计算汇总
+  var totalSpend = 0, totalSales = 0, totalConversions = 0, totalClicks = 0, totalImpressions = 0;
+  data.forEach(function(row) {
+    totalSpend += parseFloat(row.spend) || 0;
+    totalSales += parseFloat(row.sales) || 0;
+    totalConversions += parseInt(row.conversions) || 0;
+    totalClicks += parseInt(row.clicks) || 0;
+    totalImpressions += parseInt(row.impressions) || 0;
+  });
+  var avgCPA = totalConversions > 0 ? totalSpend / totalConversions : 0;
+  var avgROI = totalSpend > 0 ? totalSales / totalSpend : 0;
+  var avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0;
+  var avgCVR = totalClicks > 0 ? (totalConversions / totalClicks * 100) : 0;
+  
+  // 分页
+  var totalPages = Math.ceil(data.length / pageSize);
+  var startIdx = (page - 1) * pageSize;
+  var pageData = data.slice(startIdx, startIdx + pageSize);
+  
+  var h = '<div class="tbl-wrap"><table><thead><tr><th>国家</th><th>日期</th><th>广告系列</th><th>花费</th><th>销售额</th><th>转化</th><th>CPA</th><th>ROI</th><th>点击</th><th>展示</th><th>CTR</th><th>CVR</th></tr></thead><tbody>';
+  
+  pageData.forEach(function(row) {
+    h += '<tr><td><strong>' + esc(row.country || '') + '</strong></td>';
+    h += '<td>' + esc(row.date || '') + '</td>';
+    h += '<td class="td-campaign">' + esc(row.campaign || '') + '</td>';
+    h += '<td>' + fmtMoney(row.spend) + '</td>';
+    h += '<td>' + fmtMoney(row.sales) + '</td>';
+    h += '<td>' + fmtNum(row.conversions) + '</td>';
+    h += '<td>' + fmtMoney(row.cpa) + '</td>';
+    h += '<td><strong class="' + roiClass(row.roi) + '">' + (row.roi || 0).toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtNum(row.clicks) + '</td>';
+    h += '<td>' + fmtNum(row.impressions) + '</td>';
+    h += '<td>' + (row.ctr || 0).toFixed(2) + '%</td>';
+    h += '<td>' + (row.cvr || 0).toFixed(2) + '%</td></tr>';
+  });
+  
+  // 汇总行
+  h += '<tr class="summary-row"><td>汇总</td><td>-</td><td>-</td>';
+  h += '<td>' + fmtMoney(totalSpend) + '</td>';
+  h += '<td>' + fmtMoney(totalSales) + '</td>';
+  h += '<td>' + fmtNum(totalConversions) + '</td>';
+  h += '<td>' + fmtMoney(avgCPA) + '</td>';
+  h += '<td class="' + roiClass(avgROI) + '">' + avgROI.toFixed(2) + '</td>';
+  h += '<td>' + fmtNum(totalClicks) + '</td>';
+  h += '<td>' + fmtNum(totalImpressions) + '</td>';
+  h += '<td>' + avgCTR.toFixed(2) + '%</td>';
+  h += '<td>' + avgCVR.toFixed(2) + '%</td></tr>';
+  
+  h += '</tbody></table></div>';
+  
+  // 分页控件
+  if (totalPages > 1) {
+    h += '<div class="pagination">';
+    h += '<span class="page-info">共 ' + data.length + ' 条，第 ' + page + '/' + totalPages + ' 页</span>';
+    h += '<div class="page-btns">';
+    if (page > 1) {
+      h += '<button class="btn btn-sm btn-s" onclick="goProductPage(' + (page - 1) + ')">上一页</button>';
+    }
+    // 显示页码按钮（最多5个）
+    var showPages = [];
+    if (totalPages <= 5) {
+      for (var i = 1; i <= totalPages; i++) showPages.push(i);
+    } else {
+      if (page <= 3) {
+        showPages = [1, 2, 3, 4, 5];
+      } else if (page >= totalPages - 2) {
+        showPages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        showPages = [page - 2, page - 1, page, page + 1, page + 2];
+      }
+    }
+    showPages.forEach(function(p) {
+      h += '<button class="btn btn-sm ' + (p === page ? 'btn-p' : 'btn-s') + '" onclick="goProductPage(' + p + ')">' + p + '</button>';
+    });
+    if (page < totalPages) {
+      h += '<button class="btn btn-sm btn-s" onclick="goProductPage(' + (page + 1) + ')">下一页</button>';
+    }
+    h += '</div></div>';
+  }
+  
+  area.innerHTML = h;
+}
+
+function goProductPage(page) {
+  S.filters.product.page = page;
+  save();
+  renderProductTable();
+}
+
+/* ==================== 模块10: 预算与实际对比 ==================== */
+function clearBudgetFilter() {
+  document.getElementById('budgetStart').value = '';
+  document.getElementById('budgetEnd').value = '';
+  S.filters.budget.start = '';
+  S.filters.budget.end = '';
+  save();
+  renderBudgetModule();
+}
+
+function applyBudgetFilter() {
+  S.filters.budget.start = document.getElementById('budgetStart').value;
+  S.filters.budget.end = document.getElementById('budgetEnd').value;
+  save();
+  renderBudgetModule();
+}
+
+function renderBudgetModule() {
+  var start = document.getElementById('budgetStart').value;
+  var end = document.getElementById('budgetEnd').value;
+  S.filters.budget.start = start;
+  S.filters.budget.end = end;
+  save();
+  
+  var info = start && end ? start + ' ~ ' + end : '全部数据';
+  document.getElementById('budgetFilterInfo').textContent = info;
+  
+  var area = document.getElementById('budgetTableArea');
+  
+  // 获取筛选后的数据
+  var filteredSites = getFilteredSyncData(start, end);
+  var days = 1;
+  if (start && end) {
+    days = Math.max(1, Math.ceil((new Date(end) - new Date(start)) / 864e5) + 1);
+  } else if (S.syncData.dateRange.start && S.syncData.dateRange.end) {
+    days = Math.max(1, Math.ceil((new Date(S.syncData.dateRange.end) - new Date(S.syncData.dateRange.start)) / 864e5) + 1);
+  }
+  
+  var h = '<div class="tbl-wrap"><table><thead><tr>';
+  h += '<th>站点</th>';
+  h += '<th>目标日花费</th>';
+  h += '<th>实际日均花费</th>';
+  h += '<th>花费偏差</th>';
+  h += '<th>目标日均销售额</th>';
+  h += '<th>实际日均销售额</th>';
+  h += '<th>销售额偏差</th>';
+  h += '<th>目标ROI</th>';
+  h += '<th>实际ROI</th>';
+  h += '<th>预算月消耗</th>';
+  h += '</tr></thead><tbody>';
+  
+  for (var name in S.budget) {
+    var budget = S.budget[name];
+    var siteData = filteredSites.find(function(s) { return s.name === name; });
+    
+    var actualDaily = 0, actualDailySales = 0, actualROI = 0;
+    if (siteData) {
+      actualDaily = (siteData.spend || 0) / days;
+      actualDailySales = (siteData.sales || 0) / days;
+      actualROI = siteData.roi || 0;
+    }
+    
+    // 花费偏差 = (实际日均花费 - 目标日花费) / 目标日花费 * 100%
+    var spendDiff = budget.planned_daily > 0 ? ((actualDaily - budget.planned_daily) / budget.planned_daily * 100) : 0;
+    var spendCls = actualDaily <= budget.planned_daily ? 'growth-down' : 'growth-up';
+    
+    // 销售额偏差 = (实际日均销售额 - 目标日均销售额) / 目标日均销售额 * 100%
+    var targetDailySales = budget.target_daily_sales || 0;
+    var salesDiff = targetDailySales > 0 ? ((actualDailySales - targetDailySales) / targetDailySales * 100) : 0;
+    var salesCls = salesDiff >= 0 ? 'growth-up' : 'growth-down';
+    
+    // 目标ROI
+    var targetROI = budget.target_roi || 10;
+    
+    h += '<tr>';
+    h += '<td><strong>' + esc(name) + '</strong></td>';
+    h += '<td><input type="number" class="budget-input" value="' + (budget.planned_daily || '') + '" onchange="updateBudget(\'' + name + '\',\'planned_daily\',this.value)" placeholder="输入目标"></td>';
+    h += '<td>' + fmtMoney(actualDaily) + '</td>';
+    h += '<td><span class="' + spendCls + '">' + (spendDiff >= 0 ? '+' : '') + spendDiff.toFixed(1) + '%</span></td>';
+    h += '<td><input type="number" class="budget-input" value="' + (budget.target_daily_sales || '') + '" onchange="updateBudget(\'' + name + '\',\'target_daily_sales\',this.value)" placeholder="输入目标"></td>';
+    h += '<td>' + fmtMoney(actualDailySales) + '</td>';
+    h += '<td><span class="' + salesCls + '">' + (salesDiff >= 0 ? '+' : '') + salesDiff.toFixed(1) + '%</span></td>';
+    h += '<td><input type="number" class="budget-input" style="width:80px" value="' + (budget.target_roi || '') + '" onchange="updateBudget(\'' + name + '\',\'target_roi\',this.value)" placeholder="目标ROI"></td>';
+    h += '<td><strong class="' + roiClass(actualROI) + '">' + actualROI.toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtMoney(budget.planned_monthly) + '</td>';
+    h += '</tr>';
+  }
+  
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
+}
+
+function updateBudget(siteName, field, value) {
+  if (!S.budget[siteName]) return;
+  S.budget[siteName][field] = parseFloat(value) || 0;
+  save();
+  renderBudgetModule(); // 重新渲染以更新偏差计算
+}
+
+/* ==================== 模块12: 重点产品数据对比 ==================== */
+function clearPcmpFilter() {
+  document.getElementById('pcmpStartA').value = '';
+  document.getElementById('pcmpEndA').value = '';
+  document.getElementById('pcmpStartB').value = '';
+  document.getElementById('pcmpEndB').value = '';
+  S.filters.pcmp.startA = '';
+  S.filters.pcmp.endA = '';
+  S.filters.pcmp.startB = '';
+  S.filters.pcmp.endB = '';
+  save();
+  renderPcmpModule();
+}
+
+function applyPcmpFilter() {
+  S.filters.pcmp.startA = document.getElementById('pcmpStartA').value;
+  S.filters.pcmp.endA = document.getElementById('pcmpEndA').value;
+  S.filters.pcmp.startB = document.getElementById('pcmpStartB').value;
+  S.filters.pcmp.endB = document.getElementById('pcmpEndB').value;
+  save();
+  renderPcmpModule();
+}
+
+function renderPcmpTabs() {
+  var el = document.getElementById('pcmpTabs');
+  var h = '';
+  Object.keys(PRODUCT_CATEGORIES).forEach(function(p) {
+    h += '<button class="tbtn' + (S.filters.pcmp.activeTab === p ? ' active' : '') + '" onclick="switchPcmpTab(\'' + p + '\')">' + p + '</button>';
+  });
+  el.innerHTML = h;
+}
+
+function switchPcmpTab(p) {
+  S.filters.pcmp.activeTab = p;
+  save();
+  renderPcmpTabs();
+  renderPcmpOverview();
+  renderPcmpCharts();
+  renderPcmpTable();
+}
+
+function getPcmpAggregated(prod, start, end) {
+  // 获取聚合后的站点级别数据 {英国站: {spend, sales, conversions, clicks, impressions}, ...}
+  var keywords = PRODUCT_CATEGORIES[prod] || [];
+  if (keywords.length === 0) return {};
+  
+  var siteData = {};
+  var convData = S.syncData.conversion;
+  if (!convData || !convData.campaigns) return {};
+  
+  convData.campaigns.forEach(function(camp) {
+    var campName = (camp.campaign || '').toLowerCase();
+    var matched = keywords.some(function(kw) { return campName.indexOf(kw.toLowerCase()) !== -1; });
+    if (!matched) return;
+    if (start && camp.date < start) return;
+    if (end && camp.date > end) return;
+    
+    var site = camp.siteName || '';
+    if (!site) return;
+    if (!siteData[site]) siteData[site] = {spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0};
+    siteData[site].spend += parseFloat(camp.spend) || 0;
+    siteData[site].sales += parseFloat(camp.purchase_value) || 0;
+    siteData[site].conversions += parseInt(camp.purchases) || 0;
+    siteData[site].clicks += parseInt(camp.clicks) || 0;
+    siteData[site].impressions += parseInt(camp.impressions) || 0;
+  });
+  
+  // 计算衍生指标
+  ['英国站', '法国站', '德国站', '意大利站'].forEach(function(s) {
+    if (siteData[s]) {
+      var d = siteData[s];
+      d.roi = d.spend > 0 ? d.sales / d.spend : 0;
+      d.cpa = d.conversions > 0 ? d.spend / d.conversions : 0;
+      d.ctr = d.impressions > 0 ? d.clicks / d.impressions * 100 : 0;
+    }
+  });
+  
+  return siteData;
+}
+
+function renderPcmpOverview() {
+  var prod = S.filters.pcmp.activeTab;
+  var dataA = getPcmpAggregated(prod, S.filters.pcmp.startA, S.filters.pcmp.endA);
+  var dataB = getPcmpAggregated(prod, S.filters.pcmp.startB, S.filters.pcmp.endB);
+  var el = document.getElementById('pcmpOverview');
+  if (!el) return;
+  
+  var sites = ['英国站', '法国站', '德国站', '意大利站'];
+  var totalSpendA = 0, totalSpendB = 0, totalSalesA = 0, totalSalesB = 0, totalConvA = 0, totalConvB = 0;
+  sites.forEach(function(s) {
+    if (dataA[s]) { totalSpendA += dataA[s].spend; totalSalesA += dataA[s].sales; totalConvA += dataA[s].conversions; }
+    if (dataB[s]) { totalSpendB += dataB[s].spend; totalSalesB += dataB[s].sales; totalConvB += dataB[s].conversions; }
+  });
+  
+  var roiA = totalSpendA > 0 ? totalSalesA / totalSpendA : 0;
+  var roiB = totalSpendB > 0 ? totalSalesB / totalSpendB : 0;
+  
+  var cards = [
+    {label: '周期A花费', value: fmtMoney(totalSpendA), bg: '#6366f1'},
+    {label: '周期B花费', value: fmtMoney(totalSpendB), bg: '#f59e0b'},
+    {label: '周期A销售额', value: fmtMoney(totalSalesA), bg: '#10b981'},
+    {label: '周期B销售额', value: fmtMoney(totalSalesB), bg: '#ef4444'},
+    {label: '周期A ROI', value: roiA.toFixed(2), bg: '#8b5cf6'},
+    {label: '周期B ROI', value: roiB.toFixed(2), bg: '#06b6d4'}
+  ];
+  
+  var h = '';
+  cards.forEach(function(c) {
+    h += '<div class="overview-card" style="background:linear-gradient(135deg,' + c.bg + ' 0%,' + c.bg + 'dd 100%)">';
+    h += '<div class="ov-label">' + c.label + '</div>';
+    h += '<div class="ov-value">' + c.value + '</div>';
+    h += '</div>';
+  });
+  el.innerHTML = h;
+}
+
+function renderPcmpCharts() {
+  var prod = S.filters.pcmp.activeTab;
+  var dataA = getPcmpAggregated(prod, S.filters.pcmp.startA, S.filters.pcmp.endA);
+  var dataB = getPcmpAggregated(prod, S.filters.pcmp.startB, S.filters.pcmp.endB);
+  
+  var sites = ['英国站', '法国站', '德国站', '意大利站'];
+  var labels = sites.map(function(s) { return s.replace('站', ''); });
+  
+  var spendA = sites.map(function(s) { return dataA[s] ? dataA[s].spend : 0; });
+  var spendB = sites.map(function(s) { return dataB[s] ? dataB[s].spend : 0; });
+  var salesA = sites.map(function(s) { return dataA[s] ? dataA[s].sales : 0; });
+  var salesB = sites.map(function(s) { return dataB[s] ? dataB[s].sales : 0; });
+  var roiA = sites.map(function(s) { return dataA[s] ? dataA[s].roi : 0; });
+  var roiB = sites.map(function(s) { return dataB[s] ? dataB[s].roi : 0; });
+  
+  // 环比增长率
+  var growthRates = sites.map(function(s) {
+    var a = dataA[s] ? dataA[s].sales : 0;
+    var b = dataB[s] ? dataB[s].sales : 0;
+    return a > 0 ? ((b - a) / a * 100) : 0;
+  });
+  
+  // 花费环比对比
+  var spendCtx = document.getElementById('pcmpSpendChart');
+  if (spendCtx) {
+    if (window.pcmpSpendInst) window.pcmpSpendInst.destroy();
+    window.pcmpSpendInst = new Chart(spendCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {label: '周期A 花费 ($)', data: spendA, backgroundColor: '#6366f1', borderRadius: 4},
+          {label: '周期B 花费 ($)', data: spendB, backgroundColor: '#f59e0b', borderRadius: 4}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: prod + ' - 花费周期对比' }, legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // 销售额环比对比
+  var salesCtx = document.getElementById('pcmpSalesChart');
+  if (salesCtx) {
+    if (window.pcmpSalesInst) window.pcmpSalesInst.destroy();
+    window.pcmpSalesInst = new Chart(salesCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {label: '周期A 销售额 ($)', data: salesA, backgroundColor: '#10b981', borderRadius: 4},
+          {label: '周期B 销售额 ($)', data: salesB, backgroundColor: '#ef4444', borderRadius: 4}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: prod + ' - 销售额周期对比' }, legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // ROI环比对比
+  var roiCtx = document.getElementById('pcmpROIChart');
+  if (roiCtx) {
+    if (window.pcmpROIInst) window.pcmpROIInst.destroy();
+    window.pcmpROIInst = new Chart(roiCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {label: '周期A ROI', data: roiA, backgroundColor: '#8b5cf6', borderRadius: 4},
+          {label: '周期B ROI', data: roiB, backgroundColor: '#06b6d4', borderRadius: 4}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: prod + ' - ROI周期对比' }, legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // 销售额环比增长率图
+  var growthCtx = document.getElementById('pcmpGrowthChart');
+  if (growthCtx) {
+    if (window.pcmpGrowthInst) window.pcmpGrowthInst.destroy();
+    var growthColors = growthRates.map(function(v) { return v >= 0 ? '#10b981' : '#ef4444'; });
+    window.pcmpGrowthInst = new Chart(growthCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{label: '销售额增长率 (%)', data: growthRates, backgroundColor: growthColors, borderRadius: 4}]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: { title: { display: true, text: prod + ' - 销售额环比增长率' }, legend: { display: false } },
+        scales: { x: { title: { display: true, text: '%' } } }
+      }
+    });
+  }
+}
+
+function renderPcmpTable() {
+  var prod = S.filters.pcmp.activeTab;
+  var dataA = getPcmpAggregated(prod, S.filters.pcmp.startA, S.filters.pcmp.endA);
+  var dataB = getPcmpAggregated(prod, S.filters.pcmp.startB, S.filters.pcmp.endB);
+  var area = document.getElementById('pcmpTableArea');
+  
+  var sites = ['英国站', '法国站', '德国站', '意大利站'];
+  
+  var h = '<div class="tbl-wrap"><table class="pcmp-table"><thead><tr><th>站点</th><th>周期A 花费</th><th>周期B 花费</th><th>花费变化</th><th>周期A 销售额</th><th>周期B 销售额</th><th>销售额变化</th><th>周期A ROI</th><th>周期B ROI</th><th>ROI变化</th></tr></thead><tbody>';
+  
+  sites.forEach(function(site) {
+    var a = dataA[site] || {spend: 0, sales: 0, roi: 0, conversions: 0};
+    var b = dataB[site] || {spend: 0, sales: 0, roi: 0, conversions: 0};
+    
+    var spendChange = a.spend > 0 ? ((b.spend - a.spend) / a.spend * 100) : 0;
+    var salesChange = a.sales > 0 ? ((b.sales - a.sales) / a.sales * 100) : 0;
+    var roiChange = a.roi > 0 ? ((b.roi - a.roi) / a.roi * 100) : 0;
+    
+    function changeCls(v) { return v > 0 ? 'up' : v < 0 ? 'down' : 'flat'; }
+    function changeSign(v) { return v > 0 ? '↑+' + v.toFixed(1) + '%' : v < 0 ? '↓' + v.toFixed(1) + '%' : '— 0%'; }
+    
+    h += '<tr><td><strong>' + esc(site.replace('站', '')) + '</strong></td>';
+    h += '<td>' + fmtMoney(a.spend) + '</td>';
+    h += '<td>' + fmtMoney(b.spend) + '</td>';
+    h += '<td class="' + changeCls(spendChange) + '">' + changeSign(spendChange) + '</td>';
+    h += '<td>' + fmtMoney(a.sales) + '</td>';
+    h += '<td>' + fmtMoney(b.sales) + '</td>';
+    h += '<td class="' + changeCls(salesChange) + '">' + changeSign(salesChange) + '</td>';
+    h += '<td>' + a.roi.toFixed(2) + '</td>';
+    h += '<td>' + b.roi.toFixed(2) + '</td>';
+    h += '<td class="' + changeCls(roiChange) + '">' + changeSign(roiChange) + '</td>';
+    h += '</tr>';
+  });
+  
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
+}
+
+function renderPcmpModule() {
+  var sa = document.getElementById('pcmpStartA').value;
+  var ea = document.getElementById('pcmpEndA').value;
+  var sb = document.getElementById('pcmpStartB').value;
+  var eb = document.getElementById('pcmpEndB').value;
+  
+  if (sa && ea) { S.filters.pcmp.startA = sa; S.filters.pcmp.endA = ea; }
+  if (sb && eb) { S.filters.pcmp.startB = sb; S.filters.pcmp.endB = eb; }
+  save();
+  
+  renderPcmpTabs();
+  renderPcmpOverview();
+  renderPcmpCharts();
+  renderPcmpTable();
+}
+
+/* ==================== 模块13: 受众细分分析 ==================== */
+var AUDIENCE_DATA = null;
+var CUSTOMER_TYPE_DATA = null;  // 新老客户分析数据
+
+function fetchAudience() {
+  var sd = document.getElementById('audStart').value;
+  var ed = document.getElementById('audEnd').value;
+  if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
+  
+  var btn = event.target;
+  btn.textContent = '获取中...';
+  btn.disabled = true;
+  document.getElementById('audFilterInfo').textContent = '正在获取受众数据...';
+  
+  fetch('/api/audience/fetch', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({start_date: sd, end_date: ed})
+  }).then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      AUDIENCE_DATA = result.data;
+      document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed;
+      toast('受众数据获取成功', 'ok');
+      renderAudienceTabs();
+      renderAudienceModule();
+    } else {
+      toast('获取失败: ' + (result.message || '未知错误'), 'err');
+      document.getElementById('audFilterInfo').textContent = '获取失败';
+    }
+  }).catch(function(e) {
+    toast('请求失败: ' + e.message, 'err');
+  }).finally(function() {
+    btn.textContent = '🔍 获取受众数据';
+    btn.disabled = false;
+  });
+}
+
+function loadAudienceCache() {
+  fetch('/api/audience/data').then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      AUDIENCE_DATA = result.data;
+      // 如果有缓存的新老客户数据(v2)也加载
+      if (result.data.customer_type_v2) {
+        CUSTOMER_TYPE_DATA = result.data.customer_type_v2;
+      }
+      var dr = AUDIENCE_DATA.date_range || [];
+      document.getElementById('audFilterInfo').textContent = dr[0] ? dr[0] + ' ~ ' + dr[1] : '已加载缓存';
+      renderAudienceTabs();
+      renderAudienceModule();
+    } else {
+      document.getElementById('audFilterInfo').textContent = '暂无受众数据';
+    }
+  });
+}
+
+function fetchCustomerType() {
+  var sd = document.getElementById('audStart').value;
+  var ed = document.getElementById('audEnd').value;
+  if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
+  
+  var btn = event.target;
+  btn.textContent = '获取中...';
+  btn.disabled = true;
+  
+  fetch('/api/audience/customer-type', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({start_date: sd, end_date: ed})
+  }).then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      CUSTOMER_TYPE_DATA = result.data;
+      toast('新老客户数据获取成功', 'ok');
+      renderAudienceModule();
+    } else {
+      toast('获取失败: ' + (result.message || '未知错误'), 'err');
+    }
+  }).catch(function(e) {
+    toast('请求失败: ' + e.message, 'err');
+  }).finally(function() {
+    btn.textContent = '\uD83D\uDC64 新老客户';
+    btn.disabled = false;
+  });
+}
+
+var AUDIENCE_SITES = ['英国站','法国站','德国站','意大利站'];
+var AUDIENCE_TABS = ['全部','英国站','法国站','德国站','意大利站'];
+var AUD_ACTIVE_TAB = '全部';
+
+function renderAudienceTabs() {
+  var el = document.getElementById('audTabs');
+  var h = '';
+  AUDIENCE_TABS.forEach(function(t) {
+    h += '<button class="tbtn' + (AUD_ACTIVE_TAB === t ? ' active' : '') + '" onclick="switchAudTab(\'' + t + '\')">' + t + '</button>';
+  });
+  el.innerHTML = h;
+}
+
+function switchAudTab(tab) {
+  AUD_ACTIVE_TAB = tab;
+  renderAudienceTabs();
+  renderAudienceModule();
+  // 更新提示信息
+  var info = document.getElementById('audTabInfo');
+  if (info) info.textContent = tab === '全部' ? '汇总全部站点' : '仅显示 ' + tab;
+}
+
+function getAudSiteData(siteName) {
+  if (!AUDIENCE_DATA) return null;
+  return {
+    gender: (AUDIENCE_DATA.gender || {})[siteName] || {},
+    age: (AUDIENCE_DATA.age || {})[siteName] || {},
+    type: (AUDIENCE_DATA.type || {})[siteName] || {}
+  };
+}
+
+function aggregateAllSites(dataKey) {
+  var agg = {};
+  AUDIENCE_SITES.forEach(function(site) {
+    var siteData = AUDIENCE_DATA && (AUDIENCE_DATA[dataKey] || {})[site];
+    if (!siteData) return;
+    Object.keys(siteData).forEach(function(k) {
+      if (!agg[k]) agg[k] = {spend:0, sales:0, conversions:0, clicks:0, impressions:0};
+      var src = siteData[k];
+      agg[k].spend += src.spend || 0;
+      agg[k].sales += src.sales || 0;
+      agg[k].conversions += src.conversions || 0;
+      agg[k].clicks += src.clicks || 0;
+      agg[k].impressions += src.impressions || 0;
+    });
+  });
+  Object.keys(agg).forEach(function(k) {
+    var g = agg[k];
+    g.roi = g.spend > 0 ? g.sales / g.spend : 0;
+    g.cpa = g.conversions > 0 ? g.spend / g.conversions : 0;
+  });
+  return agg;
+}
+
+// 根据当前选中的站点标签返回数据（全部→汇总 / 单个站点→仅该站点）
+function getActiveAudData(dataKey) {
+  if (AUD_ACTIVE_TAB === '全部' || !AUD_ACTIVE_TAB) {
+    return aggregateAllSites(dataKey);
+  }
+  var src = AUDIENCE_DATA && (AUDIENCE_DATA[dataKey] || {})[AUD_ACTIVE_TAB];
+  if (!src) return {};
+  // 计算roi/cpa
+  var out = {};
+  Object.keys(src).forEach(function(k) {
+    var s = src[k];
+    out[k] = {
+      spend: s.spend || 0, sales: s.sales || 0, conversions: s.conversions || 0,
+      clicks: s.clicks || 0, impressions: s.impressions || 0,
+      roi: (s.spend || 0) > 0 ? (s.sales || 0) / (s.spend || 0) : 0,
+      cpa: (s.conversions || 0) > 0 ? (s.spend || 0) / (s.conversions || 0) : 0
+    };
+  });
+  return out;
+}
+
+function getActiveTypeData() {
+  if (AUD_ACTIVE_TAB === '全部' || !AUD_ACTIVE_TAB) {
+    var agg = {};
+    AUDIENCE_SITES.forEach(function(site) {
+      var t = (AUDIENCE_DATA.type || {})[site] || {};
+      Object.keys(t).forEach(function(k) { agg[k] = (agg[k] || 0) + t[k]; });
+    });
+    return agg;
+  }
+  return (AUDIENCE_DATA && AUDIENCE_DATA.type && AUDIENCE_DATA.type[AUD_ACTIVE_TAB]) || {};
+}
+
+function renderAudienceOverview() {
+  var el = document.getElementById('audOverview');
+  if (!el || !AUDIENCE_DATA) return;
+  
+  var genderAgg = getActiveAudData('gender');
+  var maleSpend = (genderAgg.male || {}).spend || 0;
+  var femaleSpend = (genderAgg.female || {}).spend || 0;
+  var maleSales = (genderAgg.male || {}).sales || 0;
+  var femaleSales = (genderAgg.female || {}).sales || 0;
+  var maleROI = maleSpend > 0 ? maleSales / maleSpend : 0;
+  var femaleROI = femaleSpend > 0 ? femaleSales / femaleSpend : 0;
+  
+  var typeAgg = getActiveTypeData();
+  var broadCount = typeAgg['广泛定向'] || 0;
+  var customCount = 0;
+  Object.keys(typeAgg).forEach(function(k) {
+    if (k !== '广泛定向') customCount += typeAgg[k];
+  });
+  
+  var h = '';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)"><div class="ov-label">男性花费</div><div class="ov-value">' + fmtMoney(maleSpend) + '</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#ec4899,#f472b6)"><div class="ov-label">女性花费</div><div class="ov-value">' + fmtMoney(femaleSpend) + '</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#10b981,#34d399)"><div class="ov-label">男性ROI</div><div class="ov-value">' + maleROI.toFixed(2) + '</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)"><div class="ov-label">女性ROI</div><div class="ov-value">' + femaleROI.toFixed(2) + '</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><div class="ov-label">广泛定向</div><div class="ov-value">' + broadCount + ' 组</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#ef4444,#f87171)"><div class="ov-label">精准定向</div><div class="ov-value">' + customCount + ' 组</div></div>';
+  el.innerHTML = h;
+}
+
+function renderAudienceCharts() {
+  if (!AUDIENCE_DATA) return;
+  
+  var genderAgg = getActiveAudData('gender');
+  var ageAgg = getActiveAudData('age');
+  var genderKeys = Object.keys(genderAgg);
+  var ageKeys = Object.keys(ageAgg).sort();
+  
+  // 1. 性别 花费+ROI 双轴图
+  var gCtx = document.getElementById('audGenderChart');
+  if (gCtx) {
+    if (window.audGenderInst) window.audGenderInst.destroy();
+    var gLabels = genderKeys.map(function(k) { return {'male':'男性','female':'女性','unknown':'未知'}[k] || k; });
+    var gSpend = genderKeys.map(function(k) { return Math.round(genderAgg[k].spend); });
+    var gROI = genderKeys.map(function(k) { return genderAgg[k].roi; });
+    var gColors = genderKeys.map(function(k) { return k==='male'?'#3b82f6':k==='female'?'#ec4899':'#94a3b8'; });
+    var gTotal = gSpend.reduce(function(a,b){return a+b;},0);
+    window.audGenderInst = new Chart(gCtx,{
+      type:'bar',data:{labels:gLabels,datasets:[
+        {label:'花费',data:gSpend,backgroundColor:gColors,borderRadius:8,barPercentage:.55,order:2},
+        {label:'ROI',data:gROI,type:'line',borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',tension:.4,fill:true,
+         pointRadius:6,pointBackgroundColor:'#fff',pointBorderColor:'#10b981',pointBorderWidth:2.5,pointHoverRadius:9,yAxisID:'y1',order:1}
+      ]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+        plugins:{title:{display:true,text:'\uD83D\uDC64 性别 花费 & ROI',font:{size:14,weight:'700'},color:'#334155',padding:12},
+          tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.yAxisID==='y1'?'ROI: '+c.raw.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString()+' ('+(c.raw/gTotal*100).toFixed(1)+'%)';}}}},
+        scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
+          y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
+  }
+  
+  // 2. 年龄 横向渐变条+ROI
+  var aCtx = document.getElementById('audAgeChart');
+  if (aCtx) {
+    if (window.audAgeInst) window.audAgeInst.destroy();
+    var aSpend = ageKeys.map(function(k) { return Math.round(ageAgg[k].spend); });
+    var aROI = ageKeys.map(function(k) { return ageAgg[k].roi; });
+    var aColors = ageKeys.map(function(_,i){var t=i/(ageKeys.length-1||1);return 'hsl('+(220+t*35)+',65%,'+(45+t*15)+'%)';});
+    window.audAgeInst = new Chart(aCtx,{
+      type:'bar',data:{labels:ageKeys,datasets:[
+        {label:'花费',data:aSpend,backgroundColor:aColors,borderRadius:8,barPercentage:.7,yAxisID:'y'},
+        {label:'ROI',data:aROI,type:'line',borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',tension:.4,fill:true,
+         pointRadius:5,pointBackgroundColor:'#10b981',pointBorderColor:'#fff',pointBorderWidth:2,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',interaction:{intersect:false,mode:'index'},
+        plugins:{title:{display:true,text:'\uD83C\uDF82 年龄 花费 & ROI',font:{size:14,weight:'700'},color:'#334155',padding:12},
+          tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)'}},
+        scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
+          x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
+          y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
+  }
+  
+  // 3. 受众类型 横向彩色条
+  var typeAgg = getActiveTypeData();
+  var tCtx = document.getElementById('audTypeChart');
+  if (tCtx) {
+    if (window.audTypeInst) window.audTypeInst.destroy();
+    var tKeys = Object.keys(typeAgg).sort(function(a,b){return typeAgg[b]-typeAgg[a];});
+    var tVals = tKeys.map(function(k){return typeAgg[k];});
+    var tTotal = tVals.reduce(function(a,b){return a+b;},0);
+    var tColors = tKeys.map(function(k){
+      if(k.indexOf('广泛')>=0) return '#6366f1';if(k.indexOf('类似')>=0) return '#8b5cf6';
+      if(k.indexOf('现有')>=0) return '#10b981';if(k.indexOf('互动')>=0) return '#f59e0b';
+      if(k.indexOf('网站')>=0) return '#06b6d4';return '#94a3b8';
+    });
+    window.audTypeInst = new Chart(tCtx,{type:'bar',data:{labels:tKeys,datasets:[
+      {label:'广告组',data:tVals,backgroundColor:tColors,borderRadius:8,barPercentage:.65}
+    ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{title:{display:true,text:'\uD83C\uDFAF 受众类型分布',font:{size:14,weight:'700'},color:'#334155',padding:12},legend:{display:false},
+        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.raw+' 组 ('+(c.raw/tTotal*100).toFixed(1)+'%)';}}}},
+      scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
+        x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},ticks:{stepSize:Math.ceil(tTotal/5)}}}}});
+  }
+  
+  // 4. 性别占比 环形饼图+中心文字
+  var pCtx = document.getElementById('audGenderPie');
+  if (pCtx) {
+    if (window.audPieInst) window.audPieInst.destroy();
+    var totalSpend = genderKeys.reduce(function(s,k){return s+genderAgg[k].spend;},0);
+    var pLabels = genderKeys.map(function(k){return{'male':'男性','female':'女性','unknown':'未知'}[k]||k;});
+    var pData = genderKeys.map(function(k){return Math.round(genderAgg[k].spend);});
+    window.audPieInst = new Chart(pCtx,{type:'doughnut',data:{labels:pLabels,datasets:[
+      {data:pData,backgroundColor:['#3b82f6','#ec4899','#94a3b8'],borderWidth:3,borderColor:'#fff',hoverBorderWidth:5}
+    ]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{title:{display:true,text:'\uD83D\uDC8D 性别花费占比',font:{size:14,weight:'700'},color:'#334155',padding:12},
+        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.label+': $'+c.raw.toLocaleString()+' ('+(c.raw/totalSpend*100).toFixed(1)+'%)';}}}}},
+      plugins:[{id:'centerText',afterDraw:function(c){c.ctx.save();c.ctx.textAlign='center';c.ctx.textBaseline='middle';
+        c.ctx.font='bold 12px system-ui';c.ctx.fillStyle='#64748b';c.ctx.fillText('总花费',c.width/2,c.height/2-8);
+        c.ctx.font='bold 15px system-ui';c.ctx.fillStyle='#1e293b';c.ctx.fillText('$'+(totalSpend/1000).toFixed(1)+'k',c.width/2,c.height/2+12);
+        c.ctx.restore();}}]});
+  }
+}
+
+function renderAudienceTable() {
+  var area = document.getElementById('audTableArea');
+  if (!AUDIENCE_DATA) { area.innerHTML = ''; return; }
+  
+  var genderAgg = getActiveAudData('gender');
+  var ageAgg = getActiveAudData('age');
+  
+  var h = '<div class="tbl-wrap"><table class="pcmp-table"><thead><tr><th>细分维度</th><th>分段</th><th>花费</th><th>销售额</th><th>转化</th><th>ROI</th><th>CPA</th></tr></thead><tbody>';
+  
+  // 性别行
+  var gnMap = {'male':'男','female':'女','unknown':'未知'};
+  Object.keys(genderAgg).forEach(function(k) {
+    var d = genderAgg[k];
+    h += '<tr><td>性别</td><td><strong>' + (gnMap[k]||k) + '</strong></td>';
+    h += '<td>' + fmtMoney(d.spend) + '</td>';
+    h += '<td>' + fmtMoney(d.sales) + '</td>';
+    h += '<td>' + fmtNum(d.conversions) + '</td>';
+    h += '<td><strong>' + d.roi.toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtMoney(d.cpa) + '</td></tr>';
+  });
+  
+  // 年龄行
+  Object.keys(ageAgg).sort().forEach(function(k) {
+    var d = ageAgg[k];
+    h += '<tr><td>年龄</td><td><strong>' + k + '</strong></td>';
+    h += '<td>' + fmtMoney(d.spend) + '</td>';
+    h += '<td>' + fmtMoney(d.sales) + '</td>';
+    h += '<td>' + fmtNum(d.conversions) + '</td>';
+    h += '<td><strong>' + d.roi.toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtMoney(d.cpa) + '</td></tr>';
+  });
+  
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
+}
+
+function renderAudienceModule() {
+  renderAudienceOverview();
+  renderAudienceCharts();
+  renderAudienceTable();
+  renderCustomerTypeCharts();
+  renderCustomerTypeTable();
+}
+
+function renderCustomerTypeCharts() {
+  if (!CUSTOMER_TYPE_DATA) return;
+  
+  var sites = AUDIENCE_SITES;
+  var segmentKeys = ['新受众', '现有客户', '互动受众'];
+  
+  // Get active site data or aggregate all
+  var activeData = {};
+  if (AUD_ACTIVE_TAB === '全部' || !AUD_ACTIVE_TAB) {
+    segmentKeys.forEach(function(t) {
+      activeData[t] = {spend:0, sales:0, conversions:0, clicks:0, impressions:0};
+    });
+    sites.forEach(function(site) {
+      var sd = (CUSTOMER_TYPE_DATA.sites || {})[site];
+      if (!sd) return;
+      segmentKeys.forEach(function(t) {
+        if (sd[t]) {
+          activeData[t].spend += sd[t].spend || 0;
+          activeData[t].sales += sd[t].sales || 0;
+          activeData[t].conversions += sd[t].conversions || 0;
+        }
+      });
+    });
+  } else {
+    var sd = (CUSTOMER_TYPE_DATA.sites || {})[AUD_ACTIVE_TAB] || {};
+    segmentKeys.forEach(function(t) {
+      activeData[t] = sd[t] ? {
+        spend: sd[t].spend || 0, sales: sd[t].sales || 0, conversions: sd[t].conversions || 0
+      } : {spend:0, sales:0, conversions:0};
+    });
+  }
+  
+  var newAud = activeData['新受众'] || {};
+  var existAud = activeData['现有客户'] || {};
+  var engagAud = activeData['互动受众'] || {};
+  var totalSpend = newAud.spend + existAud.spend + engagAud.spend;
+  
+  if (totalSpend === 0) {
+    document.getElementById('audCustTableArea').innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px">暂无该站点的受众分段数据</p>';
+    hideNewOldCharts();
+    return;
+  }
+  
+  // 衍生：新客 = 新受众 + 互动受众，老客 = 现有客户
+  var ncSpend = newAud.spend + engagAud.spend;
+  var ocSpend = existAud.spend;
+  var ncSales = newAud.sales + engagAud.sales;
+  var ocSales = existAud.sales;
+  var ncConv = newAud.conversions + engagAud.conversions;
+  var ocConv = existAud.conversions;
+  var ncROI = ncSpend > 0 ? ncSales / ncSpend : 0;
+  var ocROI = ocSpend > 0 ? ocSales / ocSpend : 0;
+  
+  // 1. 横向堆叠条 + 百分比标签 + 富图例
+  var sCtx = document.getElementById('audNewOldSpend');
+  if (sCtx) {
+    if (window.audNewOldSpendInst) window.audNewOldSpendInst.destroy();
+    showNewOldCharts();
+    window.audNewOldSpendInst = new Chart(sCtx,{type:'bar',data:{labels:['花费构成'],datasets:[
+      {label:'新受众',data:[Math.round(newAud.spend)],backgroundColor:'#3b82f6',borderRadius:{topLeft:10,bottomLeft:10}},
+      {label:'互动受众',data:[Math.round(engagAud.spend)],backgroundColor:'#8b5cf6'},
+      {label:'现有客户',data:[Math.round(existAud.spend)],backgroundColor:'#f59e0b',borderRadius:{topRight:10,bottomRight:10}}
+    ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{title:{display:true,text:'\u2B50 \u53D7\u4F17\u82B1\u8D39\u6784\u6210',font:{size:15,weight:'800'},color:'#1e293b',padding:{bottom:16}},
+        legend:{position:'bottom',align:'center',labels:{usePointStyle:true,pointStyleWidth:12,padding:22,font:{size:12},
+          generateLabels:function(c){return c.data.datasets.map(function(d,i){var v=d.data[0]||0;return{text:'  '+d.label+'  $'+v.toLocaleString()+'  ('+(v/totalSpend*100).toFixed(1)+'%)',fillStyle:d.backgroundColor,strokeStyle:d.backgroundColor,lineWidth:0,pointStyle:'rectRounded',index:i};});}}},
+        tooltip:{padding:14,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.label+': $'+c.raw.toLocaleString()+' ('+(c.raw/totalSpend*100).toFixed(1)+'%)';}}}},
+      scales:{x:{stacked:true,beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},ticks:{font:{size:11},callback:function(v){return '$'+(v/1000).toFixed(0)+'k'}}},
+        y:{stacked:true,grid:{display:false},border:{display:false}}}},
+      plugins:[{id:'pctLabels',afterDatasetsDraw:function(c){var m=c.getDatasetMeta(0);if(!m||!m.data||!m.data[0])return;
+        var x=m.data[0].x,y=m.data[0].y,cum=0;c.data.datasets.forEach(function(ds){var v=ds.data[0]||0;if(v/totalSpend>.05){
+        cum+=v;c.ctx.save();c.ctx.font='bold 13px system-ui';c.ctx.fillStyle='#fff';c.ctx.textAlign='center';c.ctx.textBaseline='middle';
+        c.ctx.shadowColor='rgba(0,0,0,.35)';c.ctx.shadowBlur=4;c.ctx.fillText(Math.round(v/totalSpend*100)+'%',c.scales.x.getPixelForValue(cum-v/2),y);c.ctx.restore();}});}}]});
+  }
+  
+  // 2. 新老客(二分类)对比柱状图
+  var rCtx = document.getElementById('audNewOldROI');
+  if (rCtx) {
+    if (window.audNewOldROIInst) window.audNewOldROIInst.destroy();
+    window.audNewOldROIInst = new Chart(rCtx, {
+      type: 'bar',
+      data: {
+        labels: ['花费($)', '销售额($)', '购买次数', 'ROI'],
+        datasets: [
+          {label: '新客(新受众+互动)', data: [Math.round(ncSpend), Math.round(ncSales), ncConv, ncROI], backgroundColor: '#3b82f6', borderRadius: 6},
+          {label: '老客(现有客户)', data: [Math.round(ocSpend), Math.round(ocSales), ocConv, ocROI], backgroundColor: '#f59e0b', borderRadius: 6}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: '新客 vs 老客 关键指标' }, legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+function showNewOldCharts() {
+  var box = document.getElementById('audSpendBox');
+  if (box) box.style.display = '';
+  var r = document.getElementById('audNewOldROI');
+  if (r && r.parentElement) r.parentElement.style.display = '';
+}
+function hideNewOldCharts() {
+  var box = document.getElementById('audSpendBox');
+  if (box) box.style.display = 'none';
+  var r = document.getElementById('audNewOldROI');
+  if (r && r.parentElement) r.parentElement.style.display = 'none';
+}
+
+function renderCustomerTypeTable() {
+  var area = document.getElementById('audCustTableArea');
+  if (!CUSTOMER_TYPE_DATA) { area.innerHTML = ''; return; }
+  
+  var rows = [];
+  var sites = AUD_ACTIVE_TAB === '全部' ? AUDIENCE_SITES : [AUD_ACTIVE_TAB];
+  
+  sites.forEach(function(site) {
+    var sd = (CUSTOMER_TYPE_DATA.sites || {})[site];
+    if (!sd) return;
+    var na = sd['新受众'] || {};
+    var ec = sd['现有客户'] || {};
+    var eg = sd['互动受众'] || {};
+    var total = (na.spend||0) + (ec.spend||0) + (eg.spend||0);
+    var ncSpend = (na.spend||0) + (eg.spend||0);
+    var ncSales = (na.sales||0) + (eg.sales||0);
+    var ncConv = (na.conversions||0) + (eg.conversions||0);
+    var ncROI = ncSpend > 0 ? ncSales / ncSpend : 0;
+    var ocROI = (ec.spend||0) > 0 ? (ec.sales||0) / (ec.spend||0) : 0;
+    var ncPct = total > 0 ? (ncSpend / total * 100) : 0;
+    rows.push({
+      site: site.replace('站', ''),
+      naSpend: na.spend||0, egSpend: eg.spend||0, ecSpend: ec.spend||0,
+      ncSpend: ncSpend, ocSpend: ec.spend||0,
+      ncSales: ncSales, ocSales: ec.sales||0,
+      ncConv: ncConv, ocConv: ec.conversions||0,
+      ncROI: ncROI, ocROI: ocROI, ncPct: ncPct
+    });
+  });
+  
+  if (rows.length === 0) { area.innerHTML = ''; return; }
+  
+  var showSiteCol = sites.length > 1;
+  var h = '<div class="tbl-wrap" style="margin-top:12px"><table class="pcmp-table"><thead><tr>';
+  if (showSiteCol) h += '<th>站点</th>';
+  h += '<th>新受众</th><th>互动受众</th><th>现有客户</th><th>新客占比</th><th>新客ROI</th><th>老客ROI</th><th>新客转化</th><th>老客转化</th></tr></thead><tbody>';
+  
+  rows.forEach(function(r) {
+    h += '<tr>';
+    if (showSiteCol) h += '<td><strong>' + r.site + '</strong></td>';
+    h += '<td style="color:#3b82f6">$' + r.naSpend.toLocaleString() + '</td>';
+    h += '<td style="color:#8b5cf6">$' + r.egSpend.toLocaleString() + '</td>';
+    h += '<td style="color:#f59e0b">$' + r.ecSpend.toLocaleString() + '</td>';
+    h += '<td><strong style="color:#3b82f6">' + r.ncPct.toFixed(1) + '%</strong></td>';
+    h += '<td><strong>' + r.ncROI.toFixed(2) + '</strong></td>';
+    h += '<td><strong>' + r.ocROI.toFixed(2) + '</strong></td>';
+    h += '<td>' + r.ncConv + '</td>';
+    h += '<td>' + r.ocConv + '</td>';
+    h += '</tr>';
+  });
+  
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
+}
+
+/* ==================== 站点对比看板 ==================== */
+function clearChartFilter() {
+  document.getElementById('chartStart').value = '';
+  document.getElementById('chartEnd').value = '';
+  S.filters.chart.start = '';
+  S.filters.chart.end = '';
+  save();
+  renderChartModule();
+}
+
+function applyChartFilter() {
+  S.filters.chart.start = document.getElementById('chartStart').value;
+  S.filters.chart.end = document.getElementById('chartEnd').value;
+  save();
+  renderChartModule();
+}
+
+function renderChartTabs() {
+  var tabs = document.getElementById('chartTabs');
+  var prods = ['全部'].concat(Object.keys(PRODUCT_DATA));
+  var h = '';
+  prods.forEach(function(p) {
+    h += '<button class="tbtn' + (S.filters.chart.activeTab === p ? ' active' : '') + '" onclick="switchChartTab(\'' + p + '\')">' + p + '</button>';
+  });
+  tabs.innerHTML = h;
+}
+
+function switchChartTab(p) {
+  S.filters.chart.activeTab = p;
+  save();
+  renderChartTabs();
+  updateCharts();
+}
+
+function renderChartModule() {
+  var start = document.getElementById('chartStart').value;
+  var end = document.getElementById('chartEnd').value;
+  S.filters.chart.start = start;
+  S.filters.chart.end = end;
+  save();
+  
+  var info = start && end ? start + ' ~ ' + end : '全部数据';
+  document.getElementById('chartFilterInfo').textContent = info;
+  
+  renderChartTabs();
+  updateCharts();
+}
+
+var CI = {};
+
+function getChartData(metric) {
+  var prod = S.filters.chart.activeTab;
+  var labels = countries.slice();
+  var data = [];
+  
+  // 获取筛选后的同步数据
+  var filteredSites = getFilteredSyncData(S.filters.chart.start, S.filters.chart.end);
+  var siteMapping = {'英国站': '英国', '法国站': '法国', '德国站': '德国', '意大利站': '意大利'};
+  
+  if (prod === '全部') {
+    countries.forEach(function(c) {
+      var siteName = c + '站';
+      var site = filteredSites.find(function(s) { return s.name === siteName; });
+      if (site) {
+        var metricMap = {
+          'spend': site.spend, 'sales': site.sales, 'conversions': site.conversions,
+          'cpa': site.cpa, 'roi': site.roi, 'ctr': site.ctr, 'cvr': site.cvr
+        };
+        data.push(metricMap[metric] || 0);
+      } else {
+        data.push(0);
+      }
+    });
+  } else {
+    // 从产品分类数据获取（通过广告系列名称匹配）
+    var prodData = getProductDataFromSync(prod, S.filters.chart.start, S.filters.chart.end);
+    countries.forEach(function(c) {
+      var total = 0;
+      var count = 0;
+      prodData.forEach(function(r) {
+        if (r.country === c) { total += r[metric] || 0; count++; }
+      });
+      data.push(count > 0 ? (metric === 'roi' ? total / count : total) : 0);
+    });
+  }
+  return {labels: labels, data: data};
+}
+
+function mkChart(cid, metric, label, colorByValue) {
+  var ctx = document.getElementById(cid);
+  if (!ctx) return;
+  if (CI[cid]) CI[cid].destroy();
+  var d = getChartData(metric);
+  var colors = colorByValue ? d.data.map(function(v) { return v >= 10 ? '#10b981' : v >= 6 ? '#f59e0b' : '#ef4444'; }) : cColors;
+  CI[cid] = new Chart(ctx, {
+    type: 'bar',
+    data: {labels: d.labels, datasets: [{label: label, data: d.data, backgroundColor: colors, borderRadius: 6, borderSkipped: false}]},
+    options: {responsive: true, maintainAspectRatio: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, grid: {color: 'rgba(0,0,0,.05)'}}, x: {grid: {display: false}}}}
+  });
+}
+
+function updateCharts() {
+  // 更新数据来源标签
+  var label = document.getElementById('chartDataSource');
+  if (S.syncData.syncTime && S.syncData.sites.length > 0) {
+    var dr = S.syncData.dateRange;
+    label.innerHTML = '&#128260; 数据来源: FB同步 (' + dr.start + ' 至 ' + dr.end + ') - 同步时间: ' + new Date(S.syncData.syncTime).toLocaleString('zh-CN');
+  } else {
+    label.innerHTML = '&#128203; 数据来源: 暂无同步数据，请先同步FB数据';
+  }
+  
+  mkChart('chartSpend', 'spend', '花费 ($)');
+  mkChart('chartSales', 'sales', '销售额 ($)');
+  mkChart('chartROI', 'roi', 'ROI', true);
+  mkChart('chartConv', 'conversions', '转化次数');
+  mkChart('chartCTR', 'ctr', '点击率 (%)');
+  mkChart('chartCPA', 'cpa', 'CPA ($)');
+}
+
+/* ==================== 同步FB数据 ==================== */
+function showSyncModal() {
+  var today = new Date();
+  var start = new Date(today.getFullYear(), today.getMonth(), 1);
+  var end = new Date(today);
+  function fmtLocal(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  var m = document.createElement('div');
+  m.id = 'syncMo';
+  m.className = 'mo';
+  m.innerHTML = '<div class="mo-c" style="max-width:520px"><div class="mo-h"><h3>&#128260; 同步 Facebook 广告数据</h3><button class="mo-x" onclick="closeSync()">&times;</button></div>'
+    + '<div class="mo-b">'
+    + '<div class="dr"><div><label>开始日期:</label><input type="date" id="syncSD" value="' + fmtLocal(start) + '"></div><div><label>结束日期:</label><input type="date" id="syncED" value="' + fmtLocal(end) + '"></div></div>'
+    + '<div class="qs"><label>快速选择:</label><div class="bg">'
+    + '<button class="btn btn-s" onclick="setDR(7)">最近7天</button>'
+    + '<button class="btn btn-s" onclick="setDR(30)">最近30天</button>'
+    + '<button class="btn btn-s" onclick="setTM()">本月</button>'
+    + '<button class="btn btn-s" onclick="setLM()">上月</button>'
+    + '</div></div>'
+    + '<div class="sa"><p>&#128230; 将同步以下账户的数据:</p><ul><li>英国站 (SUNLU UK)</li><li>法国站 (SUNLU FR)</li><li>德国站 (SUNLU.DE.WEZO)</li><li>意大利站 (SUNLU IT)</li></ul></div>'
+    // 进度展示区域（默认隐藏）
+    + '<div id="syncProgress" style="display:none;margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">'
+    + '<div style="margin-bottom:8px;font-weight:600;font-size:.9rem;color:#334155" id="syncProgMsg">准备中...</div>'
+    + '<div style="background:#e2e8f0;border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px">'
+    + '<div id="syncProgBar" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);height:100%;width:0%;border-radius:6px;transition:width .3s"></div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:.8rem;color:#64748b">'
+    + '<span id="syncProgSite">-</span><span id="syncProgPct">0%</span>'
+    + '</div>'
+    // 日志区域
+    + '<div id="syncLogs" style="margin-top:10px;max-height:160px;overflow-y:auto;font-size:.78rem;color:#475569;font-family:monospace;background:#1e293b;color:#e2e8f0;padding:8px;border-radius:4px;line-height:1.5"></div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="mo-f"><button class="btn btn-s" id="syncCancelBtn" onclick="closeSync()">取消</button><button class="btn btn-p" id="syncStartBtn" onclick="execSync()">开始同步</button></div>'
+    + '</div>';
+  document.body.appendChild(m);
+}
+
+function closeSync() {
+  if (window._syncPollId) { clearInterval(window._syncPollId); window._syncPollId = null; }
+  var m = document.getElementById('syncMo');
+  if (m) m.remove();
+}
+
+function setDR(d) {
+  var e = new Date(), s = new Date();
+  s.setDate(s.getDate() - d);
+  function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
+  document.getElementById('syncED').value = f(e);
+  document.getElementById('syncSD').value = f(s);
+}
+
+function setTM() {
+  var n = new Date(), s = new Date(n.getFullYear(), n.getMonth(), 1), e = new Date(n.getFullYear(), n.getMonth() + 1, 0);
+  function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
+  document.getElementById('syncSD').value = f(s);
+  document.getElementById('syncED').value = f(e);
+}
+
+function setLM() {
+  var n = new Date(), s = new Date(n.getFullYear(), n.getMonth() - 1, 1), e = new Date(n.getFullYear(), n.getMonth(), 0);
+  function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
+  document.getElementById('syncSD').value = f(s);
+  document.getElementById('syncED').value = f(e);
+}
+
+function execSync() {
+  var sd = document.getElementById('syncSD').value, ed = document.getElementById('syncED').value;
+  if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
+  if (new Date(sd) > new Date(ed)) { toast('开始日期不能晚于结束日期', 'warn'); return; }
+  
+  // 显示进度区域，隐藏日期选择
+  var progEl = document.getElementById('syncProgress');
+  var startBtn = document.getElementById('syncStartBtn');
+  var cancelBtn = document.getElementById('syncCancelBtn');
+  
+  // 获取日期输入所在的元素并隐藏
+  var drEl = document.querySelector('#syncMo .dr');
+  var qsEl = document.querySelector('#syncMo .qs');
+  var saEl = document.querySelector('#syncMo .sa');
+  if (drEl) drEl.style.display = 'none';
+  if (qsEl) qsEl.style.display = 'none';
+  if (saEl) saEl.style.display = 'none';
+  
+  progEl.style.display = 'block';
+  startBtn.textContent = '同步中...';
+  startBtn.disabled = true;
+  cancelBtn.textContent = '后台运行';
+  
+  document.getElementById('syncProgMsg').textContent = '正在连接...';
+  
+  // 启动轮询
+  var pollInterval = 800;
+  window._syncPollId = setInterval(function() {
+    fetch('/api/sync/progress').then(function(r) { return r.json(); }).then(function(p) {
+      if (!document.getElementById('syncMo')) return; // 弹窗已被关闭
+      
+      var totalChunks = p.total_chunks || 1;
+      var siteIdx = p.site_idx || 0;
+      var totalSites = p.total_sites || 4;
+      var chunkIdx = p.chunk_idx || 0;
+      
+      // 计算进度百分比
+      var progress = 100;
+      if (p.status === 'running') {
+        progress = Math.round(((siteIdx - 1) / totalSites + chunkIdx / (totalSites * totalChunks)) * 100);
+        progress = Math.max(0, Math.min(99, progress));
+      } else if (p.status === 'idle') {
+        progress = 0;
+      }
+      
+      document.getElementById('syncProgBar').style.width = progress + '%';
+      document.getElementById('syncProgPct').textContent = progress + '%';
+      document.getElementById('syncProgMsg').textContent = p.message || '';
+      document.getElementById('syncProgSite').textContent = p.site || '-';
+      
+      // 更新日志
+      var logEl = document.getElementById('syncLogs');
+      if (logEl && p.logs) {
+        logEl.innerHTML = p.logs.slice(-20).map(function(l) { return '<div>' + esc(l) + '</div>'; }).join('');
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+      
+      if (p.status === 'done') {
+        clearInterval(window._syncPollId);
+        window._syncPollId = null;
+        document.getElementById('syncProgMsg').textContent = '同步完成! 刷新页面...';
+        document.getElementById('syncProgBar').style.width = '100%';
+        document.getElementById('syncProgPct').textContent = '100%';
+        
+        setTimeout(function() {
+          closeSync();
+          reloadAfterSync(sd, ed);
+        }, 1200);
+      }
+    }).catch(function() {});
+  }, pollInterval);
+  
+  // 发起实际的同步请求
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({start_date: sd, end_date: ed})
+  }).catch(function(e) {
+    clearInterval(window._syncPollId);
+    document.getElementById('syncProgMsg').textContent = '同步失败: ' + e.message;
+    document.getElementById('syncCancelBtn').textContent = '关闭';
+    var btn = document.getElementById('syncBtn');
+    btn.innerHTML = '&#128260; 同步FB数据';
+    btn.disabled = false;
+  });
+}
+
+function reloadAfterSync(sd, ed) {
+  var btn = document.getElementById('syncBtn');
+  btn.innerHTML = '&#128260; 同步FB数据';
+  btn.disabled = false;
+  
+  loadSyncData(function() {
+    // 更新所有筛选日期
+    var filterIds = ['kpi', 'sync', 'weekly', 'product', 'budget', 'chart'];
+    filterIds.forEach(function(f) {
+      S.filters[f].start = sd;
+      S.filters[f].end = ed;
+    });
+    ['kpi','sync','weekly','product','budget','chart'].forEach(function(f) {
+      var capF = f.charAt(0).toUpperCase() + f.slice(1);
+      var sEl = document.getElementById(capF + 'Start');
+      var eEl = document.getElementById(capF + 'End');
+      if (sEl) sEl.value = sd;
+      if (eEl) eEl.value = ed;
+    });
+    save();
+    renderAll();
+  });
+}
+
+function mockSyncData(sd, ed) {
+  // 生成模拟数据用于演示
+  var convSites = {
+    '英国站': {name: '英国站', spend: 2589.92, sales: 25743.18, conversions: 361, clicks: 4785, impressions: 400531},
+    '法国站': {name: '法国站', spend: 1866.13, sales: 16553.77, conversions: 119, clicks: 3384, impressions: 423804},
+    '德国站': {name: '德国站', spend: 3494.38, sales: 84048.12, conversions: 784, clicks: 11897, impressions: 529860},
+    '意大利站': {name: '意大利站', spend: 2016.55, sales: 19549.02, conversions: 234, clicks: 4575, impressions: 505578}
+  };
+  
+  var trafficSites = {
+    '英国站': {name: '英国站', spend: 500.00, clicks: 15000, impressions: 800000},
+    '法国站': {name: '法国站', spend: 400.00, clicks: 12000, impressions: 650000},
+    '德国站': {name: '德国站', spend: 600.00, clicks: 18000, impressions: 950000},
+    '意大利站': {name: '意大利站', spend: 350.00, clicks: 10000, impressions: 550000}
+  };
+  
+  // 生成每日明细
+  var days = Math.max(1, Math.ceil((new Date(ed) - new Date(sd)) / 864e5) + 1);
+  
+  // 转化广告每日数据
+  var convDaily = {};
+  Object.keys(convSites).forEach(function(name) {
+    var site = convSites[name];
+    convDaily[name] = [];
+    for (var i = 0; i < days; i++) {
+      var d = new Date(sd);
+      d.setDate(d.getDate() + i);
+      var dateStr = d.toISOString().split('T')[0];
+      convDaily[name].push({
+        date: dateStr,
+        spend: Math.round(site.spend / days * 100) / 100,
+        sales: Math.round(site.sales / days * 100) / 100,
+        conversions: Math.ceil(site.conversions / days),
+        clicks: Math.ceil(site.clicks / days),
+        impressions: Math.ceil(site.impressions / days)
+      });
+    }
+  });
+  
+  // 流量广告每日数据
+  var trafficDaily = {};
+  Object.keys(trafficSites).forEach(function(name) {
+    var site = trafficSites[name];
+    trafficDaily[name] = [];
+    for (var i = 0; i < days; i++) {
+      var d = new Date(sd);
+      d.setDate(d.getDate() + i);
+      var dateStr = d.toISOString().split('T')[0];
+      trafficDaily[name].push({
+        date: dateStr,
+        spend: Math.round(site.spend / days * 100) / 100,
+        clicks: Math.ceil(site.clicks / days),
+        impressions: Math.ceil(site.impressions / days)
+      });
+    }
+  });
+  
+  // 计算汇总
+  function calcConvSummary(name) {
+    var daily = convDaily[name];
+    var total = {spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0};
+    daily.forEach(function(d) {
+      total.spend += d.spend;
+      total.sales += d.sales;
+      total.conversions += d.conversions;
+      total.clicks += d.clicks;
+      total.impressions += d.impressions;
+    });
+    return {
+      name: name,
+      daily_data: daily,
+      spend: Math.round(total.spend * 100) / 100,
+      sales: Math.round(total.sales * 100) / 100,
+      conversions: total.conversions,
+      clicks: total.clicks,
+      impressions: total.impressions,
+      cpa: Math.round(total.spend / total.conversions * 100) / 100,
+      roi: Math.round(total.sales / total.spend * 100) / 100,
+      ctr: Math.round(total.clicks / total.impressions * 10000) / 100,
+      cvr: Math.round(total.conversions / total.clicks * 10000) / 100
+    };
+  }
+  
+  function calcTrafficSummary(name) {
+    var daily = trafficDaily[name];
+    var total = {spend: 0, clicks: 0, impressions: 0};
+    daily.forEach(function(d) {
+      total.spend += d.spend;
+      total.clicks += d.clicks;
+      total.impressions += d.impressions;
+    });
+    return {
+      name: name,
+      daily_data: daily,
+      spend: Math.round(total.spend * 100) / 100,
+      clicks: total.clicks,
+      impressions: total.impressions,
+      ctr: Math.round(total.clicks / total.impressions * 10000) / 100,
+      cpc: Math.round(total.spend / total.clicks * 100) / 100
+    };
+  }
+  
+  // 构建完整的 syncData
+  var convSitesData = {};
+  var trafficSitesData = {};
+  Object.keys(convSites).forEach(function(name) {
+    convSitesData[name] = calcConvSummary(name);
+  });
+  Object.keys(trafficSites).forEach(function(name) {
+    trafficSitesData[name] = calcTrafficSummary(name);
+  });
+  
+  // 生成模拟广告系列数据（用于产品分类匹配）
+  var campaigns = [];
+  var campaignNames = [
+    'UK-电子系列-转化-2026',
+    'FR-电子系列-转化-2026', 
+    'DE-AMS Heater-转化-2026',
+    'IT-树脂-转化-2026',
+    'UK-250g装-转化-2026',
+    'DE-工程系列-转化-2026'
+  ];
+  
+  Object.keys(convSitesData).forEach(function(name, idx) {
+    var site = convSitesData[name];
+    var campaignName = campaignNames[idx % campaignNames.length];
+    site.daily_data.forEach(function(d) {
+      campaigns.push({
+        date: d.date,
+        campaign: campaignName,
+        siteName: name,
+        spend: d.spend,
+        purchase_value: d.sales,
+        purchases: d.conversions,
+        clicks: d.clicks,
+        impressions: d.impressions,
+        cpa: d.spend / (d.conversions || 1),
+        roi: d.sales / (d.spend || 1),
+        ctr: d.clicks / (d.impressions || 1) * 100,
+        cvr: d.conversions / (d.clicks || 1) * 100
+      });
+    });
+  });
+  
+  S.syncData = {
+    dateRange: {start: sd, end: ed},
+    syncTime: new Date().toISOString(),
+    conversion: {
+      sites: convSitesData,
+      summary: {},
+      campaigns: campaigns
+    },
+    traffic: {
+      sites: trafficSitesData,
+      summary: {},
+      campaigns: []
+    },
+    sites: Object.values(convSitesData)
+  };
+  
+  // 同步成功后，自动将所有筛选日期设为同步数据范围
+  var filterIds = ['kpi', 'sync', 'weekly', 'product', 'budget', 'chart'];
+  filterIds.forEach(function(f) {
+    S.filters[f].start = sd;
+    S.filters[f].end = ed;
+  });
+  filterIds.forEach(function(f) {
+    var capF = f.charAt(0).toUpperCase() + f.slice(1);
+    var sEl = document.getElementById(capF + 'Start');
+    var eEl = document.getElementById(capF + 'End');
+    if (sEl) sEl.value = sd;
+    if (eEl) eEl.value = ed;
+  });
+  
+  save();
+  renderAll();
+  toast('同步成功！(演示数据) 数据范围: ' + sd + ' 至 ' + ed, 'ok');
+}
+
+
+
+/* ==================== 导出与清空 ==================== */
+function exportData() {
+  var exportObj = {
+    header: {dept: S.dept, reporter: S.reporter, reportDate: S.reportDate, month: S.month},
+    kpi: S.kpi,
+    work: S.work,
+    issues: S.issues,
+    help: S.help,
+    innovation: S.innovation,
+    syncData: S.syncData,
+    exportTime: new Date().toISOString()
+  };
+  console.log('========== 周报数据导出 ==========');
+  console.log(JSON.stringify(exportObj, null, 2));
+  toast('数据已导出到控制台 (F12)', 'ok');
+}
+
+function clearAll() {
+  if (!confirm('确定清空所有已保存的数据？此操作不可撤销。')) return;
+  fetch('/api/clear', {method: 'POST'})
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (result.success) {
+        localStorage.removeItem(SK);
+        location.reload();
+      } else {
+        alert('清空失败: ' + (result.error || '未知错误'));
+      }
+    })
+    .catch(function(e) {
+      alert('清空失败，请检查网络连接');
+    });
+}
+
+/* ==================== 渲染全部 ==================== */
+function renderAll() {
+  renderModule1();
+  renderModule2();
+  renderDynTable('work', TABLE_FIELDS.work);
+  renderDynTable('issues', TABLE_FIELDS.issues);
+  renderDynTable('help', TABLE_FIELDS.help);
+  renderDynTable('innovation', TABLE_FIELDS.innovation);
+  renderModule7();
+  renderWeeklyModule();
+  renderProductModule();
+  renderBudgetModule();
+  renderPcmpModule();
+  renderChartModule();
+  // 如果已有缓存的受众数据则渲染
+  if (AUDIENCE_DATA) { renderAudienceTabs(); renderAudienceModule(); }
+}
+
+/* ==================== 初始化 ==================== */
+// 先从服务端加载配置，再加载同步数据
+loadConfig(function() {
+  document.getElementById('rMonth').value = S.month;
+  
+  // 始终将默认日期设为本月1日到今天（覆盖 localStorage 中的旧值）
+  // 使用本地时区手动格式化，避免 toISOString() UTC 跨月偏差
+  function fmtLocal(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  var today = new Date();
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  var defaultStart = fmtLocal(monthStart);
+  var defaultEnd = fmtLocal(today);
+  
+  S.filters.kpi.start = defaultStart; S.filters.kpi.end = defaultEnd;
+  S.filters.sync.start = defaultStart; S.filters.sync.end = defaultEnd;
+  S.filters.weekly.start = defaultStart; S.filters.weekly.end = defaultEnd;
+  S.filters.product.start = defaultStart; S.filters.product.end = defaultEnd;
+  S.filters.budget.start = defaultStart; S.filters.budget.end = defaultEnd;
+  S.filters.chart.start = defaultStart; S.filters.chart.end = defaultEnd;
+  S.filters.pcmp.startA = defaultStart; S.filters.pcmp.endA = defaultEnd;
+  S.filters.pcmp.startB = defaultStart; S.filters.pcmp.endB = defaultEnd;
+  S.filters.audience = {start: defaultStart, end: defaultEnd};
+  
+  // 从服务端加载同步数据，然后再渲染
+  loadSyncData(function() {
+    
+    // 填充日期输入框
+    if (S.filters.kpi.start) document.getElementById('kpiStart').value = S.filters.kpi.start;
+    if (S.filters.kpi.end) document.getElementById('kpiEnd').value = S.filters.kpi.end;
+    if (S.filters.sync.start) document.getElementById('syncStart').value = S.filters.sync.start;
+    if (S.filters.sync.end) document.getElementById('syncEnd').value = S.filters.sync.end;
+    if (S.filters.weekly.start) document.getElementById('weeklyStart').value = S.filters.weekly.start;
+    if (S.filters.weekly.end) document.getElementById('weeklyEnd').value = S.filters.weekly.end;
+    if (S.filters.product.start) document.getElementById('productStart').value = S.filters.product.start;
+    if (S.filters.product.end) document.getElementById('productEnd').value = S.filters.product.end;
+    if (S.filters.budget.start) document.getElementById('budgetStart').value = S.filters.budget.start;
+    if (S.filters.budget.end) document.getElementById('budgetEnd').value = S.filters.budget.end;
+    if (S.filters.chart.start) document.getElementById('chartStart').value = S.filters.chart.start;
+    if (S.filters.chart.end) document.getElementById('chartEnd').value = S.filters.chart.end;
+    if (S.filters.pcmp.startA) document.getElementById('pcmpStartA').value = S.filters.pcmp.startA;
+    if (S.filters.pcmp.endA) document.getElementById('pcmpEndA').value = S.filters.pcmp.endA;
+    if (S.filters.pcmp.startB) document.getElementById('pcmpStartB').value = S.filters.pcmp.startB;
+    if (S.filters.pcmp.endB) document.getElementById('pcmpEndB').value = S.filters.pcmp.endB;
+    if (S.filters.audience && S.filters.audience.start) document.getElementById('audStart').value = S.filters.audience.start;
+    if (S.filters.audience && S.filters.audience.end) document.getElementById('audEnd').value = S.filters.audience.end;
+    
+    renderAll();
+    
+    // 加载缓存的受众数据
+    loadAudienceCache();
+  });
+});
+</script>
+</body>
+</html>

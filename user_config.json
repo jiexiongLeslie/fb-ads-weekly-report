@@ -1,0 +1,145 @@
+{
+  "dept": "独立站销售部",
+  "reporter": "李阶熊",
+  "reportDate": "2026-05-13",
+  "month": 5,
+  "filters": {
+    "kpi": {
+      "end": "2026-05-12",
+      "start": "2026-05-01"
+    },
+    "sync": {
+      "end": "2026-05-12",
+      "start": "2026-05-01",
+      "type": "conversion"
+    },
+    "weekly": {
+      "activeTab": "意大利",
+      "end": "2026-05-12",
+      "start": "2026-04-27"
+    },
+    "product": {
+      "activeTab": "电子系列",
+      "end": "2026-05-12",
+      "page": 1,
+      "start": "2026-05-01"
+    },
+    "budget": {
+      "end": "2026-05-12",
+      "start": "2026-05-01"
+    },
+    "chart": {
+      "activeTab": "全部",
+      "end": "2026-05-12",
+      "start": "2026-05-01"
+    },
+    "pcmp": {
+      "activeTab": "电子系列",
+      "endA": "2026-05-03",
+      "endB": "2026-05-10",
+      "startA": "2026-04-27",
+      "startB": "2026-05-04"
+    },
+    "audience": {
+      "start": "2026-05-01",
+      "end": "2026-05-12"
+    }
+  },
+  "kpi": [
+    {
+      "actual": "13.19",
+      "name": "本月ROI完成情况",
+      "note": "按目前流量走势,本月可稳住ROI",
+      "target": "11"
+    },
+    {
+      "actual": "188391",
+      "name": "本月销售额完成情况",
+      "note": "流量点击稳定",
+      "target": "542345"
+    },
+    {
+      "actual": "14284",
+      "name": "本月花费完成情况",
+      "note": "转化链路平稳",
+      "target": "41850"
+    },
+    {
+      "actual": "107034",
+      "name": "本月点击量完成情况",
+      "note": "全部点击次数",
+      "target": "326652"
+    },
+    {
+      "actual": "60562",
+      "name": "本月全部点击",
+      "note": "独立用户-点击次数",
+      "target": "204158"
+    }
+  ],
+  "work": [
+    {
+      "desc": "",
+      "name": "",
+      "note": "",
+      "result": "",
+      "value": ""
+    }
+  ],
+  "issues": [
+    {
+      "desc": "",
+      "name": "",
+      "note": "",
+      "plan": "",
+      "root": ""
+    }
+  ],
+  "help": [
+    {
+      "desc": "",
+      "dir": "",
+      "name": "暂无",
+      "need": "",
+      "note": ""
+    }
+  ],
+  "innovation": [
+    {
+      "cat": "设计活动测试规划管理系统",
+      "desc": "基于现有投放模式，需要辅助工具帮助我提高工作效率，理清工作思路，做好工作复盘，所以设计活动测试规划管理系统来辅助我记录活动计划、测试方向、活动复盘、测试结果、素材需求等等",
+      "note": "局域网访问\nhttp://192.168.7.236:5001/"
+    },
+    {
+      "cat": "设计库存看板工具",
+      "desc": "每次看库存都需要去看庞大的库存表，数量太多，而且也很记住哪些库存比较多，哪些库存比较少等等问题，所以基于现有库存表，制作了一个库存看板工具，可以清晰的看到各类产品库存颜色信息",
+      "note": "局域网访问\nhttp://192.168.7.236:5002/"
+    }
+  ],
+  "budget": {
+    "英国站": {
+      "planned_daily": 292,
+      "planned_monthly": 11100,
+      "target_daily_sales": 3558,
+      "target_roi": 12.2
+    },
+    "法国站": {
+      "planned_daily": 268,
+      "planned_monthly": 6900,
+      "target_daily_sales": 2792,
+      "target_roi": 10.4
+    },
+    "德国站": {
+      "planned_daily": 530,
+      "planned_monthly": 15600,
+      "target_daily_sales": 9180,
+      "target_roi": 17.3
+    },
+    "意大利站": {
+      "planned_daily": 260,
+      "planned_monthly": 6900,
+      "target_daily_sales": 2625,
+      "target_roi": 10.1
+    }
+  }
+}
