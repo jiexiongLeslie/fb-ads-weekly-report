@@ -607,13 +607,13 @@ def classify_audience(custom_audiences):
     return list(set(types))
 
 def fetch_gender_age(account_id, since, until, access_token, breakdown):
-    """获取性别/年龄细分insights"""
-    url = f'https://graph.facebook.com/v19.0/act_{account_id}/insights'
+    """获取性别/年龄细分insights（使用account级别聚合，避免逐campaign累加偏差）"""
+    url = f'https://graph.facebook.com/v22.0/act_{account_id}/insights'
     params = {
         'access_token': access_token,
         'fields': 'spend,impressions,clicks,actions,action_values',
         'time_range': json.dumps({'since': since, 'until': until}),
-        'level': 'campaign',
+        'level': 'account',
         'breakdowns': breakdown,
         'limit': 500
     }
@@ -675,29 +675,41 @@ def fetch_audience():
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
+    # 检查已缓存数据，如果日期范围一致直接返回缓存（避免重复调用FB API）
+    if os.path.exists(AUDIENCE_FILE):
+        try:
+            with open(AUDIENCE_FILE, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+            cached_range = existing.get('date_range', [])
+            if len(cached_range) == 2 and cached_range[0] == since and cached_range[1] == until:
+                print(f"[受众分析] 日期范围 {since}~{until} 已缓存，直接返回")
+                return jsonify({'success': True, 'data': existing, 'cached': True})
+        except:
+            pass
+    
     access_token = CONFIG['access_token']
     result = {'gender': {}, 'age': {}, 'type': {}, 'sync_time': datetime.now().isoformat(), 'date_range': [since, until]}
-    
+
     for site_name, info in CONFIG['ad_accounts'].items():
         act_id = info['id']
         print(f"[受众分析] {site_name} 获取中...")
-        
+
         # 1. 性别细分
         gender_data = fetch_gender_age(act_id, since, until, access_token, 'gender')
         if 'error' not in gender_data:
             result['gender'][site_name] = aggregate_audience_insights(gender_data.get('data', []), 'gender')
-        
+
         time.sleep(1.5)
-        
+
         # 2. 年龄细分
         age_data = fetch_gender_age(act_id, since, until, access_token, 'age')
         if 'error' not in age_data:
             result['age'][site_name] = aggregate_audience_insights(age_data.get('data', []), 'age')
-        
+
         time.sleep(1.5)
-        
+
         # 3. 受众类型（通过广告组定向获取）
-        adsets_url = f'https://graph.facebook.com/v19.0/act_{act_id}/adsets'
+        adsets_url = f'https://graph.facebook.com/v22.0/act_{act_id}/adsets'
         adsets_params = {
             'access_token': access_token,
             'fields': 'name,targeting,campaign{name}',
@@ -766,6 +778,19 @@ def fetch_customer_type():
     
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
+    
+    # 检查缓存中是否已有该日期范围的customer_type_v2数据
+    if os.path.exists(AUDIENCE_FILE):
+        try:
+            with open(AUDIENCE_FILE, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
+            ctv2 = existing.get('customer_type_v2', {})
+            ct_range = ctv2.get('date_range', [])
+            if len(ct_range) == 2 and ct_range[0] == since and ct_range[1] == until:
+                print(f"[受众分段] 日期范围 {since}~{until} 已缓存，直接返回")
+                return jsonify({'success': True, 'data': ctv2, 'cached': True})
+        except:
+            pass
     
     access_token = CONFIG['access_token']
     result = {'sites': {}, 'sync_time': datetime.now().isoformat(), 'date_range': [since, until]}

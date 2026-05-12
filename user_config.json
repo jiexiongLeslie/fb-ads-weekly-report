@@ -42,7 +42,7 @@
     },
     "audience": {
       "start": "2026-05-01",
-      "end": "2026-05-02"
+      "end": "2026-05-01"
     }
   },
   "kpi": [
@@ -80,19 +80,54 @@
   "work": [
     {
       "desc": "",
-      "name": "",
+      "name": "活动复盘",
       "note": "",
-      "result": "",
+      "result": "FB",
       "value": ""
+    },
+    {
+      "name": "树脂",
+      "desc": "",
+      "result": "",
+      "value": "",
+      "note": ""
+    },
+    {
+      "name": "AMS Heater",
+      "desc": "",
+      "result": "",
+      "value": "",
+      "note": ""
+    },
+    {
+      "name": "活动投放",
+      "desc": "",
+      "result": "",
+      "value": "",
+      "note": ""
+    },
+    {
+      "name": "测试素材（意大利站、法国站）",
+      "desc": "",
+      "result": "",
+      "value": "",
+      "note": ""
     }
   ],
   "issues": [
     {
       "desc": "",
-      "name": "",
+      "name": "英国站下跌",
       "note": "",
       "plan": "",
       "root": ""
+    },
+    {
+      "name": "",
+      "desc": "",
+      "root": "",
+      "plan": "",
+      "note": ""
     }
   ],
   "help": [

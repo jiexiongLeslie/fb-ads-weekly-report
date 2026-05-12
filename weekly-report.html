@@ -488,6 +488,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 </div>
 <div class="chart-row chart-row-2">
 <div class="chart-box"><canvas id="audNewOldROI"></canvas></div>
+<div class="chart-box"><canvas id="audNewOldSales"></canvas></div>
 </div>
 </div>
 </div>
@@ -2333,10 +2334,15 @@ function fetchAudience() {
       // 保存用户选择的日期
       S.filters.audience = {start: sd, end: ed};
       save();
-      document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed;
+      var suffix = result.cached ? ' (缓存)' : '';
+      document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed + suffix;
       updateAudCacheHint();
       saveAudienceToLocal();
-      toast('受众数据获取成功', 'ok');
+      toast('受众数据' + (result.cached ? '命中缓存' : '获取成功'), 'ok');
+      // 如果受众数据中包含customer_type_v2，也一并加载
+      if (result.data.customer_type_v2) {
+        CUSTOMER_TYPE_DATA = result.data.customer_type_v2;
+      }
       renderAudienceTabs();
       renderAudienceModule();
     } else {
@@ -2401,12 +2407,25 @@ function refreshAudience() {
       AUDIENCE_DATA = result.data;
       S.filters.audience = {start: sd, end: ed};
       save();
-      infoEl.textContent = sd + ' ~ ' + ed;
+      var suffix = result.cached ? ' (缓存)' : '';
+      infoEl.textContent = sd + ' ~ ' + ed + suffix;
       updateAudCacheHint();
       saveAudienceToLocal();
-      toast('受众数据刷新成功', 'ok');
+      toast('受众数据刷新' + (result.cached ? '命中缓存' : '成功'), 'ok');
       renderAudienceTabs();
       renderAudienceModule();
+      
+      // 检查受众数据中是否已包含新老客户数据（缓存命中时）
+      if (result.data.customer_type_v2) {
+        var ctv2 = result.data.customer_type_v2;
+        var ctDate = ctv2.date_range || [];
+        if (ctDate[0] === sd && ctDate[1] === ed) {
+          CUSTOMER_TYPE_DATA = ctv2;
+          saveAudienceToLocal();
+          renderAudienceModule();
+          return; // 跳过重复的API调用
+        }
+      }
       
       // 继续刷新新老客户数据
       return fetch('/api/audience/customer-type', {
@@ -2513,7 +2532,7 @@ function fetchCustomerType() {
     if (result.success) {
       CUSTOMER_TYPE_DATA = result.data;
       saveAudienceToLocal();
-      toast('新老客户数据获取成功', 'ok');
+      toast('新老客户数据' + (result.cached ? '命中缓存' : '获取成功'), 'ok');
       renderAudienceModule();
     } else {
       toast('获取失败: ' + (result.message || '未知错误'), 'err');
@@ -2851,22 +2870,43 @@ function renderCustomerTypeCharts() {
         c.ctx.shadowColor='rgba(0,0,0,.35)';c.ctx.shadowBlur=4;c.ctx.fillText(Math.round(v/totalSpend*100)+'%',c.scales.x.getPixelForValue(cum-v/2),y);c.ctx.restore();}});}}]});
   }
   
-  // 2. 新老客(二分类)对比柱状图
+  // 2. 新老客核心指标（花费+购买次数+ROI，销售额单独看板）
   var rCtx = document.getElementById('audNewOldROI');
   if (rCtx) {
     if (window.audNewOldROIInst) window.audNewOldROIInst.destroy();
     window.audNewOldROIInst = new Chart(rCtx, {
       type: 'bar',
       data: {
-        labels: ['花费($)', '销售额($)', '购买次数', 'ROI'],
+        labels: ['花费($)', '购买次数', 'ROI'],
         datasets: [
-          {label: '新客(新受众+互动)', data: [Math.round(ncSpend), Math.round(ncSales), ncConv, ncROI], backgroundColor: '#3b82f6', borderRadius: 6},
-          {label: '老客(现有客户)', data: [Math.round(ocSpend), Math.round(ocSales), ocConv, ocROI], backgroundColor: '#f59e0b', borderRadius: 6}
+          {label: '新客(新受众+互动)', data: [Math.round(ncSpend), ncConv, Math.round(ncROI * 100) / 100], backgroundColor: '#3b82f6', borderRadius: 6},
+          {label: '老客(现有客户)', data: [Math.round(ocSpend), ocConv, Math.round(ocROI * 100) / 100], backgroundColor: '#f59e0b', borderRadius: 6}
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { title: { display: true, text: '新客 vs 老客 关键指标' }, legend: { position: 'top' } },
+        plugins: { title: { display: true, text: '新客 vs 老客 核心指标', font: { size: 14 } }, legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+  
+  // 3. 新老客销售额独立看板（销售额远高于其他指标，单独展示）
+  var salesCtx = document.getElementById('audNewOldSales');
+  if (salesCtx) {
+    if (window.audNewOldSalesInst) window.audNewOldSalesInst.destroy();
+    window.audNewOldSalesInst = new Chart(salesCtx, {
+      type: 'bar',
+      data: {
+        labels: ['销售额($)'],
+        datasets: [
+          {label: '新客(新受众+互动)', data: [Math.round(ncSales)], backgroundColor: '#3b82f6', borderRadius: 6},
+          {label: '老客(现有客户)', data: [Math.round(ocSales)], backgroundColor: '#f59e0b', borderRadius: 6}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { title: { display: true, text: '新客 vs 老客 销售额', font: { size: 14 } }, legend: { position: 'top' } },
         scales: { y: { beginAtZero: true } }
       }
     });
@@ -2878,12 +2918,16 @@ function showNewOldCharts() {
   if (box) box.style.display = '';
   var r = document.getElementById('audNewOldROI');
   if (r && r.parentElement) r.parentElement.style.display = '';
+  var s = document.getElementById('audNewOldSales');
+  if (s && s.parentElement) s.parentElement.style.display = '';
 }
 function hideNewOldCharts() {
   var box = document.getElementById('audSpendBox');
   if (box) box.style.display = 'none';
   var r = document.getElementById('audNewOldROI');
   if (r && r.parentElement) r.parentElement.style.display = 'none';
+  var s = document.getElementById('audNewOldSales');
+  if (s && s.parentElement) s.parentElement.style.display = 'none';
 }
 
 function renderCustomerTypeTable() {
