@@ -467,7 +467,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="audEnd">
 <button class="btn btn-sm btn-p" onclick="fetchAudience()">&#128269; 获取受众数据</button>
 <button class="btn btn-sm btn-p" style="background:#f59e0b" onclick="fetchCustomerType()">&#128100; 新老客户</button>
-<button class="btn btn-sm btn-s" onclick="loadAudienceCache()">刷新</button>
+<button class="btn btn-sm btn-s" onclick="refreshAudience()">刷新</button>
 <span class="filter-info" id="audFilterInfo">暂无受众数据</span>
 </div>
 <div class="tbar" id="audTabs"></div>
@@ -2345,6 +2345,57 @@ function fetchAudience() {
   }).finally(function() {
     btn.textContent = '🔍 获取受众数据';
     btn.disabled = false;
+  });
+}
+
+function refreshAudience() {
+  // 根据当前选择的日期重新获取受众数据
+  var sd = document.getElementById('audStart').value;
+  var ed = document.getElementById('audEnd').value;
+  if (!sd || !ed) {
+    // 无日期选择时，仅重新加载缓存
+    loadAudienceCache();
+    return;
+  }
+  
+  var infoEl = document.getElementById('audFilterInfo');
+  infoEl.textContent = '正在刷新...';
+  
+  // 先获取受众数据（性别/年龄/类型），再获取新老客户数据
+  fetch('/api/audience/fetch', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({start_date: sd, end_date: ed})
+  }).then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      AUDIENCE_DATA = result.data;
+      S.filters.audience = {start: sd, end: ed};
+      save();
+      infoEl.textContent = sd + ' ~ ' + ed;
+      toast('受众数据刷新成功', 'ok');
+      renderAudienceTabs();
+      renderAudienceModule();
+      
+      // 继续刷新新老客户数据
+      return fetch('/api/audience/customer-type', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({start_date: sd, end_date: ed})
+      });
+    } else {
+      infoEl.textContent = '刷新失败';
+      toast('刷新失败: ' + (result.message || '未知错误'), 'err');
+      throw new Error('stop');
+    }
+  }).then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      CUSTOMER_TYPE_DATA = result.data;
+      renderAudienceModule();
+    }
+  }).catch(function(e) {
+    if (e.message !== 'stop') {
+      toast('新老客户数据刷新失败: ' + e.message, 'err');
+    }
   });
 }
 
