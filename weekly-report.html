@@ -2039,6 +2039,8 @@ function renderPcmpTabs() {
   Object.keys(PRODUCT_CATEGORIES).forEach(function(p) {
     h += '<button class="tbtn' + (S.filters.pcmp.activeTab === p ? ' active' : '') + '" onclick="switchPcmpTab(\'' + p + '\')">' + p + '</button>';
   });
+  // 耗材数据放在最后（不包含所有已分类产品的其余数据）
+  h += '<button class="tbtn' + (S.filters.pcmp.activeTab === '耗材数据' ? ' active' : '') + '" onclick="switchPcmpTab(\'耗材数据\')">耗材数据</button>';
   el.innerHTML = h;
 }
 
@@ -2054,9 +2056,19 @@ function switchPcmpTab(p) {
 function getPcmpAggregated(prod, start, end) {
   // 获取聚合后的站点级别数据 {英国站: {spend, sales, conversions, clicks, impressions}, ...}
   // "整站数据" 不过滤产品关键词，直接汇总全部广告系列
+  // "耗材数据" 排除所有已分类产品，只汇总未归类的广告系列
   var isAllSite = (prod === '整站数据');
-  var keywords = isAllSite ? null : (PRODUCT_CATEGORIES[prod] || []);
-  if (!isAllSite && keywords.length === 0) return {};
+  var isConsumable = (prod === '耗材数据');
+  var keywords = (isAllSite || isConsumable) ? null : (PRODUCT_CATEGORIES[prod] || []);
+  if (!isAllSite && !isConsumable && keywords.length === 0) return {};
+  
+  // 耗材数据：预先收集所有已知分类的关键词，用于反向匹配
+  var allCatKeywords = [];
+  if (isConsumable) {
+    Object.keys(PRODUCT_CATEGORIES).forEach(function(cat) {
+      allCatKeywords = allCatKeywords.concat(PRODUCT_CATEGORIES[cat]);
+    });
+  }
   
   var siteData = {};
   var convData = S.syncData.conversion;
@@ -2064,7 +2076,15 @@ function getPcmpAggregated(prod, start, end) {
   
   convData.campaigns.forEach(function(camp) {
     var campName = (camp.campaign || '').toLowerCase();
-    var matched = isAllSite ? true : keywords.some(function(kw) { return campName.indexOf(kw.toLowerCase()) !== -1; });
+    var matched;
+    if (isAllSite) {
+      matched = true;
+    } else if (isConsumable) {
+      // 不匹配任何已知分类的才算耗材数据
+      matched = !allCatKeywords.some(function(kw) { return campName.indexOf(kw.toLowerCase()) !== -1; });
+    } else {
+      matched = keywords.some(function(kw) { return campName.indexOf(kw.toLowerCase()) !== -1; });
+    }
     if (!matched) return;
     if (start && camp.date < start) return;
     if (end && camp.date > end) return;
