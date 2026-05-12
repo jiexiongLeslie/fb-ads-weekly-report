@@ -470,6 +470,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <button class="btn btn-sm btn-s" onclick="refreshAudience()">刷新</button>
 <span class="filter-info" id="audFilterInfo">暂无受众数据</span>
 </div>
+<div style="font-size:.78rem;color:#64748b;margin-bottom:8px" id="audCacheHint">&#128204; 已缓存数据: 暂无</div>
 <div class="tbar" id="audTabs"></div>
 <span id="audTabInfo" style="font-size:.8rem;color:#64748b;margin-left:12px">汇总全部站点</span>
 <!-- 概览卡片 -->
@@ -2333,6 +2334,8 @@ function fetchAudience() {
       S.filters.audience = {start: sd, end: ed};
       save();
       document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed;
+      updateAudCacheHint();
+      saveAudienceToLocal();
       toast('受众数据获取成功', 'ok');
       renderAudienceTabs();
       renderAudienceModule();
@@ -2348,14 +2351,41 @@ function fetchAudience() {
   });
 }
 
+function updateAudCacheHint() {
+  // 更新已缓存数据的日期范围提示
+  var el = document.getElementById('audCacheHint');
+  if (!el) return;
+  if (AUDIENCE_DATA && AUDIENCE_DATA.date_range && AUDIENCE_DATA.date_range[0]) {
+    var dr = AUDIENCE_DATA.date_range;
+    el.innerHTML = '&#128204; 已缓存数据: <strong>' + dr[0] + ' ~ ' + dr[1] + '</strong>';
+  } else {
+    el.innerHTML = '&#128204; 已缓存数据: 暂无';
+  }
+}
+
 function refreshAudience() {
   // 根据当前选择的日期重新获取受众数据
   var sd = document.getElementById('audStart').value;
   var ed = document.getElementById('audEnd').value;
+  
   if (!sd || !ed) {
     // 无日期选择时，仅重新加载缓存
     loadAudienceCache();
     return;
+  }
+  
+  // 如果当前选择的日期与已缓存数据的日期范围一致，直接从缓存加载（避免重复获取）
+  if (AUDIENCE_DATA && AUDIENCE_DATA.date_range) {
+    var cachedStart = AUDIENCE_DATA.date_range[0];
+    var cachedEnd = AUDIENCE_DATA.date_range[1];
+    if (cachedStart === sd && cachedEnd === ed) {
+      document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed + ' (缓存)';
+      updateAudCacheHint();
+      renderAudienceTabs();
+      renderAudienceModule();
+      toast('使用已缓存数据，无需重新获取', 'ok');
+      return;
+    }
   }
   
   var infoEl = document.getElementById('audFilterInfo');
@@ -2372,6 +2402,8 @@ function refreshAudience() {
       S.filters.audience = {start: sd, end: ed};
       save();
       infoEl.textContent = sd + ' ~ ' + ed;
+      updateAudCacheHint();
+      saveAudienceToLocal();
       toast('受众数据刷新成功', 'ok');
       renderAudienceTabs();
       renderAudienceModule();
@@ -2407,14 +2439,61 @@ function loadAudienceCache() {
       if (result.data.customer_type_v2) {
         CUSTOMER_TYPE_DATA = result.data.customer_type_v2;
       }
-      var dr = AUDIENCE_DATA.date_range || [];
-      document.getElementById('audFilterInfo').textContent = dr[0] ? dr[0] + ' ~ ' + dr[1] : '已加载缓存';
-      renderAudienceTabs();
-      renderAudienceModule();
+      // 同步存储到 localStorage 作为离线备份
+      try {
+        localStorage.setItem('fb_audience_cache', JSON.stringify({
+          data: AUDIENCE_DATA,
+          customer_type: CUSTOMER_TYPE_DATA
+        }));
+      } catch(e) {}
+      applyAudienceData();
     } else {
-      document.getElementById('audFilterInfo').textContent = '暂无受众数据';
+      // 服务端无数据，尝试从 localStorage 加载
+      loadAudienceFromLocal();
     }
+  }).catch(function(e) {
+    // 服务端不可用，从 localStorage 加载
+    loadAudienceFromLocal();
   });
+}
+
+function loadAudienceFromLocal() {
+  try {
+    var raw = localStorage.getItem('fb_audience_cache');
+    if (raw) {
+      var cached = JSON.parse(raw);
+      AUDIENCE_DATA = cached.data;
+      if (cached.customer_type) CUSTOMER_TYPE_DATA = cached.customer_type;
+      applyAudienceData();
+      return;
+    }
+  } catch(e) {}
+  document.getElementById('audFilterInfo').textContent = '暂无受众数据';
+  updateAudCacheHint();
+}
+
+function saveAudienceToLocal() {
+  try {
+    localStorage.setItem('fb_audience_cache', JSON.stringify({
+      data: AUDIENCE_DATA,
+      customer_type: CUSTOMER_TYPE_DATA
+    }));
+  } catch(e) {}
+}
+
+function applyAudienceData() {
+  // 统一处理已加载的受众数据
+  var dr = AUDIENCE_DATA.date_range || [];
+  if (dr[0] && dr[1]) {
+    document.getElementById('audStart').value = dr[0];
+    document.getElementById('audEnd').value = dr[1];
+    document.getElementById('audFilterInfo').textContent = dr[0] + ' ~ ' + dr[1];
+  } else {
+    document.getElementById('audFilterInfo').textContent = '已加载缓存';
+  }
+  updateAudCacheHint();
+  renderAudienceTabs();
+  renderAudienceModule();
 }
 
 function fetchCustomerType() {
@@ -2433,6 +2512,7 @@ function fetchCustomerType() {
   }).then(function(r) { return r.json(); }).then(function(result) {
     if (result.success) {
       CUSTOMER_TYPE_DATA = result.data;
+      saveAudienceToLocal();
       toast('新老客户数据获取成功', 'ok');
       renderAudienceModule();
     } else {
