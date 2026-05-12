@@ -86,32 +86,32 @@
       "value": ""
     },
     {
+      "desc": "",
       "name": "树脂",
-      "desc": "",
+      "note": "",
       "result": "",
-      "value": "",
-      "note": ""
+      "value": ""
     },
     {
+      "desc": "",
       "name": "AMS Heater",
-      "desc": "",
+      "note": "",
       "result": "",
-      "value": "",
-      "note": ""
+      "value": ""
     },
     {
+      "desc": "",
       "name": "活动投放",
-      "desc": "",
+      "note": "",
       "result": "",
-      "value": "",
-      "note": ""
+      "value": ""
     },
     {
-      "name": "测试素材（意大利站、法国站）",
       "desc": "",
+      "name": "测试素材（意大利站、法国站）",
+      "note": "",
       "result": "",
-      "value": "",
-      "note": ""
+      "value": ""
     }
   ],
   "issues": [
@@ -123,11 +123,11 @@
       "root": ""
     },
     {
-      "name": "",
       "desc": "",
-      "root": "",
+      "name": "",
+      "note": "",
       "plan": "",
-      "note": ""
+      "root": ""
     }
   ],
   "help": [

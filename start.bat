@@ -11,18 +11,14 @@ if exist "auto-git-push.bat" (
 )
 
 :: ==========================================
-:: 启动FB广告周报系统服务
+:: 后台启动FB广告周报系统服务
 :: ==========================================
 cd /d "%~dp0backend"
-echo.
-echo ==========================================
-echo   Facebook Ads Weekly Report System
-echo ==========================================
-echo.
-echo   Frontend: http://localhost:5003
-echo   Backend:  http://localhost:5000
-echo.
-echo   Press Ctrl+C to stop
-echo ==========================================
-echo.
-python server.py
+echo 正在后台启动服务...
+start /min "" python server.py
+
+:: 等待服务启动
+timeout /t 3 /nobreak >nul
+
+:: 打开前端页面
+start http://localhost:5003
