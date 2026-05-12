@@ -29,6 +29,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'fb_ads_data.json')
 CONFIG_FILE = os.path.join(BASE_DIR, 'user_config.json')  # 用户配置文件
 AUDIENCE_FILE = os.path.join(BASE_DIR, 'fb_audience_data.json')  # 受众分析缓存
+AUDIENCE_CACHE_DIR = os.path.join(BASE_DIR, 'fb_audience_cache')  # 按天缓存目录
+
+# 转化广告专属过滤：排除流量/曝光/互动类 campaign objective
+CONVERSION_OBJECTIVES = ['OUTCOME', 'CONVERSIONS', 'PRODUCT_CATALOG_SALES', 'MESSAGES', 'LEAD_GENERATION']
+EXCLUDE_FILTER = [{"field":"campaign.objective","operator":"NOT_IN","value":["REACH","BRAND_AWARENESS","TRAFFIC","VIDEO_VIEWS","POST_ENGAGEMENT","APP_INSTALLS","AWARENESS","ENGAGEMENT","EVENT_RESPONSES","PAGE_LIKES"]}]
+
+def ensure_cache_dir():
+    os.makedirs(AUDIENCE_CACHE_DIR, exist_ok=True)
+
+def _safe_site(site):
+    return site.replace(' ', '_').replace('/', '_').replace('\\', '_')
+
+def _aud_day_path(site, date_str):
+    return os.path.join(AUDIENCE_CACHE_DIR, f'aud_{_safe_site(site)}_{date_str}.json')
+
+def _ct_day_path(site, date_str):
+    return os.path.join(AUDIENCE_CACHE_DIR, f'ct_{_safe_site(site)}_{date_str}.json')
+
+def date_range_days(since, until):
+    """生成日期范围内的所有日期列表"""
+    s = datetime.strptime(since, '%Y-%m-%d')
+    u = datetime.strptime(until, '%Y-%m-%d')
+    days = []
+    while s <= u:
+        days.append(s.strftime('%Y-%m-%d'))
+        s += timedelta(days=1)
+    return days
 
 # ============ 统一Flask应用 (端口5003) ============
 app = Flask(__name__)
@@ -606,15 +633,16 @@ def classify_audience(custom_audiences):
         types.append('广泛定向')
     return list(set(types))
 
-def fetch_gender_age(account_id, since, until, access_token, breakdown):
-    """获取性别/年龄细分insights（使用account级别聚合，避免逐campaign累加偏差）"""
+def fetch_gender_age_for_day(account_id, date_str, access_token, breakdown):
+    """获取单日性别/年龄细分insights（排除流量广告系列）"""
     url = f'https://graph.facebook.com/v22.0/act_{account_id}/insights'
     params = {
         'access_token': access_token,
         'fields': 'spend,impressions,clicks,actions,action_values',
-        'time_range': json.dumps({'since': since, 'until': until}),
+        'time_range': json.dumps({'since': date_str, 'until': date_str}),
         'level': 'account',
         'breakdowns': breakdown,
+        'filtering': json.dumps(EXCLUDE_FILTER),
         'limit': 500
     }
     all_data = []
@@ -667,7 +695,7 @@ def aggregate_audience_insights(items, group_key):
 
 @app.route('/api/audience/fetch', methods=['POST'])
 def fetch_audience():
-    """获取受众细分数据（性别+年龄+受众类型）"""
+    """获取受众细分数据（性别+年龄+受众类型）-- 按天智能缓存，排除流量广告"""
     data = request.json or {}
     since = data.get('start_date', '')
     until = data.get('end_date', '')
@@ -675,76 +703,119 @@ def fetch_audience():
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
-    # 检查已缓存数据，如果日期范围一致直接返回缓存（避免重复调用FB API）
-    if os.path.exists(AUDIENCE_FILE):
-        try:
-            with open(AUDIENCE_FILE, 'r', encoding='utf-8') as f:
-                existing = json.load(f)
-            cached_range = existing.get('date_range', [])
-            if len(cached_range) == 2 and cached_range[0] == since and cached_range[1] == until:
-                print(f"[受众分析] 日期范围 {since}~{until} 已缓存，直接返回")
-                return jsonify({'success': True, 'data': existing, 'cached': True})
-        except:
-            pass
-    
+    ensure_cache_dir()
     access_token = CONFIG['access_token']
+    days = date_range_days(since, until)
+    
+    # 按站点聚合的结果
     result = {'gender': {}, 'age': {}, 'type': {}, 'sync_time': datetime.now().isoformat(), 'date_range': [since, until]}
-
+    
     for site_name, info in CONFIG['ad_accounts'].items():
         act_id = info['id']
-        print(f"[受众分析] {site_name} 获取中...")
-
-        # 1. 性别细分
-        gender_data = fetch_gender_age(act_id, since, until, access_token, 'gender')
-        if 'error' not in gender_data:
-            result['gender'][site_name] = aggregate_audience_insights(gender_data.get('data', []), 'gender')
-
-        time.sleep(1.5)
-
-        # 2. 年龄细分
-        age_data = fetch_gender_age(act_id, since, until, access_token, 'age')
-        if 'error' not in age_data:
-            result['age'][site_name] = aggregate_audience_insights(age_data.get('data', []), 'age')
-
-        time.sleep(1.5)
-
-        # 3. 受众类型（通过广告组定向获取）
+        site_gender = {}
+        site_age = {}
+        
+        # 检查哪些天已缓存
+        missing_days = []
+        for d in days:
+            path = _aud_day_path(site_name, d)
+            if os.path.exists(path):
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        cached = json.load(f)
+                    # 合并缓存数据
+                    for gk, gv in cached.get('gender', {}).items():
+                        if gk not in site_gender:
+                            site_gender[gk] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                        for fk in ['spend','sales','conversions','clicks','impressions']:
+                            site_gender[gk][fk] += gv.get(fk, 0)
+                    for ak, av in cached.get('age', {}).items():
+                        if ak not in site_age:
+                            site_age[ak] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                        for fk in ['spend','sales','conversions','clicks','impressions']:
+                            site_age[ak][fk] += av.get(fk, 0)
+                except:
+                    missing_days.append(d)
+            else:
+                missing_days.append(d)
+        
+        cached_count = len(days) - len(missing_days)
+        print(f"[受众分析] {site_name} 共{len(days)}天, 缓存命中{cached_count}天, 需获取{len(missing_days)}天")
+        
+        # 逐天获取缺失数据
+        for d in missing_days:
+            day_result = {'gender': {}, 'age': {}}
+            
+            gd = fetch_gender_age_for_day(act_id, d, access_token, 'gender')
+            if 'error' not in gd:
+                day_result['gender'] = aggregate_audience_insights(gd.get('data', []), 'gender')
+                for gk, gv in day_result['gender'].items():
+                    if gk not in site_gender:
+                        site_gender[gk] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                    for fk in ['spend','sales','conversions','clicks','impressions']:
+                        site_gender[gk][fk] += gv.get(fk, 0)
+            
+            time.sleep(0.8)
+            
+            ad = fetch_gender_age_for_day(act_id, d, access_token, 'age')
+            if 'error' not in ad:
+                day_result['age'] = aggregate_audience_insights(ad.get('data', []), 'age')
+                for ak, av in day_result['age'].items():
+                    if ak not in site_age:
+                        site_age[ak] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                    for fk in ['spend','sales','conversions','clicks','impressions']:
+                        site_age[ak][fk] += av.get(fk, 0)
+            
+            # 保存单日缓存
+            try:
+                with open(_aud_day_path(site_name, d), 'w', encoding='utf-8') as f:
+                    json.dump(day_result, f, ensure_ascii=False)
+            except:
+                pass
+            
+            print(f"  [{site_name}] {d} 已缓存")
+            time.sleep(0.5)
+        
+        # 计算衍生指标
+        for g in list(site_gender.values()):
+            g['roi'] = round(g['sales']/g['spend'], 2) if g['spend'] > 0 else 0
+            g['cpa'] = round(g['spend']/g['conversions'], 2) if g['conversions'] > 0 else 0
+            g['ctr'] = round(g['clicks']/g['impressions']*100, 2) if g['impressions'] > 0 else 0
+        for g in list(site_age.values()):
+            g['roi'] = round(g['sales']/g['spend'], 2) if g['spend'] > 0 else 0
+            g['cpa'] = round(g['spend']/g['conversions'], 2) if g['conversions'] > 0 else 0
+            g['ctr'] = round(g['clicks']/g['impressions']*100, 2) if g['impressions'] > 0 else 0
+        
+        result['gender'][site_name] = site_gender
+        result['age'][site_name] = site_age
+        
+        # 3. 受众类型（无需按天，仍按广告组定向获取）
         adsets_url = f'https://graph.facebook.com/v22.0/act_{act_id}/adsets'
-        adsets_params = {
-            'access_token': access_token,
-            'fields': 'name,targeting,campaign{name}',
-            'limit': 200
-        }
+        adsets_params = {'access_token': access_token, 'fields': 'name,targeting,campaign{name,objective}', 'limit': 200}
         adsets_resp = requests.get(adsets_url, params=adsets_params)
         adsets_data = adsets_resp.json()
-        
-        if 'error' in adsets_data:
-            continue
-        
-        # 按受众类型分类广告组
-        type_map = {}
-        for adset in adsets_data.get('data', []):
-            targeting = adset.get('targeting', {})
-            cust_auds = targeting.get('custom_audiences', [])
-            interests = targeting.get('interests', [])
-            types = classify_audience(cust_auds)
-            
-            for t in types:
-                if t not in type_map:
-                    type_map[t] = []
+        if 'error' not in adsets_data:
+            type_map = {}
+            for adset in adsets_data.get('data', []):
                 campaign = adset.get('campaign', {})
-                type_map[t].append(campaign.get('name', ''))
+                obj = campaign.get('objective', '')
+                # 跳过流量/曝光类系列
+                if obj in ['REACH','BRAND_AWARENESS','TRAFFIC','VIDEO_VIEWS','POST_ENGAGEMENT','APP_INSTALLS','AWARENESS','ENGAGEMENT','EVENT_RESPONSES','PAGE_LIKES']:
+                    continue
+                targeting = adset.get('targeting', {})
+                cust_auds = targeting.get('custom_audiences', [])
+                types = classify_audience(cust_auds)
+                for t in types:
+                    if t not in type_map:
+                        type_map[t] = []
+                    type_map[t].append(campaign.get('name', ''))
+            result['type'][site_name] = {}
+            for t, campaigns in type_map.items():
+                result['type'][site_name][t] = len(set(campaigns))
         
-        # 计算各类受众的广告系列数
-        result['type'][site_name] = {}
-        for t, campaigns in type_map.items():
-            unique_campaigns = len(set(campaigns))
-            result['type'][site_name][t] = unique_campaigns
-        
-        # 站点间间隔
-        time.sleep(2)
+        time.sleep(1)
     
-    # 保存缓存（合并保留已有的customer_type数据）
+    # 保存聚合缓存（合并保留已有的customer_type数据）
     try:
         existing = {}
         if os.path.exists(AUDIENCE_FILE):
@@ -759,7 +830,8 @@ def fetch_audience():
     with open(AUDIENCE_FILE, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
     
-    return jsonify({'success': True, 'data': result})
+    was_cached = len(missing_days) == 0
+    return jsonify({'success': True, 'data': result, 'cached': was_cached})
 
 @app.route('/api/audience/data', methods=['GET'])
 def get_audience():
@@ -771,7 +843,7 @@ def get_audience():
 
 @app.route('/api/audience/customer-type', methods=['POST'])
 def fetch_customer_type():
-    """获取新老客户占比（使用 breakdowns=user_segment_key 获取正确受众分段）"""
+    """获取新老客户占比 -- 按天智能缓存，排除流量广告系列"""
     data = request.json or {}
     since = data.get('start_date', '')
     until = data.get('end_date', '')
@@ -779,106 +851,122 @@ def fetch_customer_type():
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
-    # 检查缓存中是否已有该日期范围的customer_type_v2数据
-    if os.path.exists(AUDIENCE_FILE):
-        try:
-            with open(AUDIENCE_FILE, 'r', encoding='utf-8') as f:
-                existing = json.load(f)
-            ctv2 = existing.get('customer_type_v2', {})
-            ct_range = ctv2.get('date_range', [])
-            if len(ct_range) == 2 and ct_range[0] == since and ct_range[1] == until:
-                print(f"[受众分段] 日期范围 {since}~{until} 已缓存，直接返回")
-                return jsonify({'success': True, 'data': ctv2, 'cached': True})
-        except:
-            pass
-    
+    ensure_cache_dir()
     access_token = CONFIG['access_token']
-    result = {'sites': {}, 'sync_time': datetime.now().isoformat(), 'date_range': [since, until]}
+    days = date_range_days(since, until)
     
-    # user_segment_key 映射
-    SEGMENT_MAP = {
-        'prospecting': '新受众',
-        'existing': '现有客户',
-        'engaged': '互动受众'
-    }
+    SEGMENT_MAP = {'prospecting': '新受众', 'existing': '现有客户', 'engaged': '互动受众'}
+    result = {'sites': {}, 'sync_time': datetime.now().isoformat(), 'date_range': [since, until]}
     
     for site_name, info in CONFIG['ad_accounts'].items():
         act_id = info['id']
-        print(f"[受众分段] {site_name} 获取中...")
+        site_agg = {}
         
-        url = f'https://graph.facebook.com/v22.0/act_{act_id}/insights'
-        params = {
-            'access_token': access_token,
-            'fields': 'spend,impressions,clicks,actions,action_values',
-            'time_range': json.dumps({'since': since, 'until': until}),
-            'level': 'campaign',
-            'breakdowns': 'user_segment_key',
-            'limit': 500
-        }
+        # 检查缓存的单日数据
+        missing_days = []
+        for d in days:
+            path = _ct_day_path(site_name, d)
+            if os.path.exists(path):
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        cached = json.load(f)
+                    for seg, sv in cached.items():
+                        if seg not in site_agg:
+                            site_agg[seg] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                        for fk in ['spend','sales','conversions','clicks','impressions']:
+                            site_agg[seg][fk] += sv.get(fk, 0)
+                except:
+                    missing_days.append(d)
+            else:
+                missing_days.append(d)
         
-        all_items = []
-        next_url = url
-        cur_params = params
-        for _ in range(5):
-            resp = requests.get(next_url, params=cur_params)
-            d = resp.json()
-            if 'error' in d:
-                print(f"  {site_name} error: {d['error'].get('message')}")
-                break
-            all_items.extend(d.get('data', []))
-            paging = d.get('paging', {})
-            next_url = paging.get('next')
-            if not next_url:
-                break
-            cur_params = None
+        cached_ct = len(days) - len(missing_days)
+        print(f"[受众分段] {site_name} 共{len(days)}天, 缓存命中{cached_ct}天, 需获取{len(missing_days)}天")
         
-        if not all_items:
-            continue
-        
-        # 按 user_segment_key 聚合
-        agg = {}  # '新受众', '现有客户', '互动受众', '未分类'
-        for item in all_items:
-            raw = item.get('user_segment_key', 'unknown')
-            seg = SEGMENT_MAP.get(raw, '未分类')
+        for d in missing_days:
+            url = f'https://graph.facebook.com/v22.0/act_{act_id}/insights'
+            params = {
+                'access_token': access_token,
+                'fields': 'spend,impressions,clicks,actions,action_values',
+                'time_range': json.dumps({'since': d, 'until': d}),
+                'level': 'campaign',
+                'breakdowns': 'user_segment_key',
+                'filtering': json.dumps(EXCLUDE_FILTER),
+                'limit': 500
+            }
             
-            if seg not in agg:
-                agg[seg] = {'spend': 0, 'sales': 0, 'conversions': 0, 'clicks': 0, 'impressions': 0}
-            
-            agg[seg]['spend'] += float(item.get('spend', 0))
-            agg[seg]['impressions'] += int(item.get('impressions', 0))
-            agg[seg]['clicks'] += int(item.get('clicks', 0))
-            
-            # 解析购买次数（购物次数=客户人数）
-            for a in item.get('actions', []):
-                at = a.get('action_type', '')
-                if 'purchase' in at:
-                    try: agg[seg]['conversions'] += int(float(a.get('value', 0)))
-                    except: pass
+            all_items = []
+            next_url = url
+            cur_params = params
+            for _ in range(5):
+                resp = requests.get(next_url, params=cur_params)
+                rd = resp.json()
+                if 'error' in rd:
+                    print(f"  {site_name} {d} error: {rd['error'].get('message')}")
                     break
-            for av in item.get('action_values', []):
-                at = av.get('action_type', '')
-                if 'purchase' in at:
-                    try: agg[seg]['sales'] += float(av.get('value', 0))
-                    except: pass
+                all_items.extend(rd.get('data', []))
+                paging = rd.get('paging', {})
+                next_url = paging.get('next')
+                if not next_url:
                     break
+                cur_params = None
+            
+            if not all_items:
+                continue
+            
+            day_agg = {}
+            for item in all_items:
+                raw = item.get('user_segment_key', 'unknown')
+                seg = SEGMENT_MAP.get(raw, '未分类')
+                if seg not in day_agg:
+                    day_agg[seg] = {'spend': 0, 'sales': 0, 'conversions': 0, 'clicks': 0, 'impressions': 0}
+                day_agg[seg]['spend'] += float(item.get('spend', 0))
+                day_agg[seg]['impressions'] += int(item.get('impressions', 0))
+                day_agg[seg]['clicks'] += int(item.get('clicks', 0))
+                for a in item.get('actions', []):
+                    if 'purchase' in a.get('action_type', ''):
+                        try: day_agg[seg]['conversions'] += int(float(a.get('value', 0)))
+                        except: pass
+                        break
+                for av in item.get('action_values', []):
+                    if 'purchase' in av.get('action_type', ''):
+                        try: day_agg[seg]['sales'] += float(av.get('value', 0))
+                        except: pass
+                        break
+            
+            # 合并到站点聚合
+            for seg, sv in day_agg.items():
+                if seg not in site_agg:
+                    site_agg[seg] = {'spend':0,'sales':0,'conversions':0,'clicks':0,'impressions':0}
+                for fk in ['spend','sales','conversions','clicks','impressions']:
+                    site_agg[seg][fk] += sv.get(fk, 0)
+            
+            # 保存单日缓存
+            try:
+                with open(_ct_day_path(site_name, d), 'w', encoding='utf-8') as f:
+                    json.dump(day_agg, f, ensure_ascii=False)
+            except:
+                pass
+            
+            print(f"  [{site_name}] CT {d} 已缓存")
+            time.sleep(0.8)
         
         # 计算衍生指标
-        for seg in agg:
-            g = agg[seg]
+        for seg, g in site_agg.items():
             g['spend'] = round(g['spend'], 2)
             g['sales'] = round(g['sales'], 2)
             g['roi'] = round(g['sales'] / g['spend'], 2) if g['spend'] > 0 else 0
             g['cpa'] = round(g['spend'] / g['conversions'], 2) if g['conversions'] > 0 else 0
             g['ctr'] = round(g['clicks'] / g['impressions'] * 100, 2) if g['impressions'] > 0 else 0
         
-        result['sites'][site_name] = agg
+        result['sites'][site_name] = site_agg
         
-        for seg, g in agg.items():
+        for seg, g in site_agg.items():
             print(f"    {seg}: spend=${g['spend']} purchases={g['conversions']} sales=${g['sales']} roi={g['roi']}")
         
-        time.sleep(2)
+        time.sleep(1)
     
-    # 缓存
+    # 缓存到总文件
     try:
         existing = {}
         if os.path.exists(AUDIENCE_FILE):
@@ -890,7 +978,8 @@ def fetch_customer_type():
     except:
         pass
     
-    return jsonify({'success': True, 'data': result})
+    was_cached = len(missing_days) == 0
+    return jsonify({'success': True, 'data': result, 'cached': was_cached})
 
 @app.route('/api/accounts', methods=['GET'])
 def get_accounts():

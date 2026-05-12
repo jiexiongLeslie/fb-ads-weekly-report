@@ -2339,10 +2339,6 @@ function fetchAudience() {
       updateAudCacheHint();
       saveAudienceToLocal();
       toast('受众数据' + (result.cached ? '命中缓存' : '获取成功'), 'ok');
-      // 如果受众数据中包含customer_type_v2，也一并加载
-      if (result.data.customer_type_v2) {
-        CUSTOMER_TYPE_DATA = result.data.customer_type_v2;
-      }
       renderAudienceTabs();
       renderAudienceModule();
     } else {
@@ -2370,28 +2366,13 @@ function updateAudCacheHint() {
 }
 
 function refreshAudience() {
-  // 根据当前选择的日期重新获取受众数据
+  // 根据当前选择的日期刷新受众数据（后端已实现按天智能缓存）
   var sd = document.getElementById('audStart').value;
   var ed = document.getElementById('audEnd').value;
   
   if (!sd || !ed) {
-    // 无日期选择时，仅重新加载缓存
     loadAudienceCache();
     return;
-  }
-  
-  // 如果当前选择的日期与已缓存数据的日期范围一致，直接从缓存加载（避免重复获取）
-  if (AUDIENCE_DATA && AUDIENCE_DATA.date_range) {
-    var cachedStart = AUDIENCE_DATA.date_range[0];
-    var cachedEnd = AUDIENCE_DATA.date_range[1];
-    if (cachedStart === sd && cachedEnd === ed) {
-      document.getElementById('audFilterInfo').textContent = sd + ' ~ ' + ed + ' (缓存)';
-      updateAudCacheHint();
-      renderAudienceTabs();
-      renderAudienceModule();
-      toast('使用已缓存数据，无需重新获取', 'ok');
-      return;
-    }
   }
   
   var infoEl = document.getElementById('audFilterInfo');
@@ -2415,19 +2396,7 @@ function refreshAudience() {
       renderAudienceTabs();
       renderAudienceModule();
       
-      // 检查受众数据中是否已包含新老客户数据（缓存命中时）
-      if (result.data.customer_type_v2) {
-        var ctv2 = result.data.customer_type_v2;
-        var ctDate = ctv2.date_range || [];
-        if (ctDate[0] === sd && ctDate[1] === ed) {
-          CUSTOMER_TYPE_DATA = ctv2;
-          saveAudienceToLocal();
-          renderAudienceModule();
-          return; // 跳过重复的API调用
-        }
-      }
-      
-      // 继续刷新新老客户数据
+      // 继续刷新新老客户数据（后端按天缓存，自动跳过已有数据）
       return fetch('/api/audience/customer-type', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
