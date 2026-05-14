@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 set TASK_NAME=FB Ads Weekly Report
 
-schtasks /Create /TN "%TASK_NAME%" /SC ONLOGON /TR "%~dp0start-background.bat" /RL LIMITED /F
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$action=New-ScheduledTaskAction -Execute 'wscript.exe' -Argument '//B //Nologo \"%~dp0start-background.vbs\"'; $trigger=New-ScheduledTaskTrigger -AtLogOn; $principal=New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited; Register-ScheduledTask -TaskName '%TASK_NAME%' -Action $action -Trigger $trigger -Principal $principal -Force | Out-Null"
 if errorlevel 1 (
     echo [ERROR] Failed to create scheduled task.
     pause
