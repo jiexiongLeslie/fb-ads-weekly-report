@@ -2476,18 +2476,19 @@ function renderAudienceCharts() {
     if (window.audAgeInst) window.audAgeInst.destroy();
     var aSpend = ageKeys.map(function(k) { return Math.round(ageAgg[k].spend); });
     var aROI = ageKeys.map(function(k) { return ageAgg[k].roi; });
+    var aROIPoints = ageKeys.map(function(k) { return {x: ageAgg[k].roi || 0, y: k}; });
     var aColors = ageKeys.map(function(_,i){var t=i/(ageKeys.length-1||1);return 'hsl('+(220+t*35)+',65%,'+(45+t*15)+'%)';});
     window.audAgeInst = new Chart(aCtx,{
       type:'bar',data:{labels:ageKeys,datasets:[
-        {label:'花费',data:aSpend,backgroundColor:aColors,borderRadius:8,barPercentage:.7,yAxisID:'y'},
-        {label:'ROI',data:aROI,type:'line',borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',tension:.4,fill:true,
-         pointRadius:5,pointBackgroundColor:'#10b981',pointBorderColor:'#fff',pointBorderWidth:2,yAxisID:'y1'}
+        {label:'花费',data:aSpend,backgroundColor:aColors,borderRadius:8,barPercentage:.7,xAxisID:'x',yAxisID:'y'},
+        {label:'ROI',data:aROIPoints,type:'line',borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',tension:.4,fill:true,
+         pointRadius:5,pointBackgroundColor:'#10b981',pointBorderColor:'#fff',pointBorderWidth:2,xAxisID:'x1',yAxisID:'y'}
       ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',interaction:{intersect:false,mode:'index'},
         plugins:{title:{display:true,text:'\uD83C\uDF82 年龄 花费 & ROI',font:{size:14,weight:'700'},color:'#334155',padding:12},
-          tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)'}},
+          tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.xAxisID==='x1'?'ROI: '+c.parsed.x.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString();}}}},
         scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
           x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
-          y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
+          x1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
   }
   
   // 3. 版位 花费+ROI 横向条
@@ -2500,20 +2501,21 @@ function renderAudienceCharts() {
     if (plKeys.length === 0) plKeys = ['暂无数据'];
     var plSpend = plKeys.map(function(k) { return Math.round((plAgg[k]||{}).spend||0); });
     var plROI = plKeys.map(function(k) { return (plAgg[k]||{}).roi||0; });
+    var plROIPoints = plKeys.map(function(k) { return {x: (plAgg[k]||{}).roi || 0, y: audPlatformLabel(k)}; });
     var plTotal = plSpend.reduce(function(a,b){return a+b;},0);
     var plColors = plKeys.map(function(k){var roi=(plAgg[k]||{}).roi||0;return roi>=10?'#10b981':roi>=6?'#f59e0b':'#ef4444';});
     var plLabels = plKeys.map(audPlatformLabel);
     window.audPlacementInst = new Chart(plCtx,{type:'bar',data:{labels:plLabels,datasets:[
-      {label:'花费',data:plSpend,backgroundColor:plColors,borderRadius:8,barPercentage:.62,yAxisID:'y'},
-      {label:'ROI',data:plROI,type:'line',borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',tension:.35,fill:false,
-       pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:'#2563eb',pointBorderWidth:2,yAxisID:'y1'}
+      {label:'花费',data:plSpend,backgroundColor:plColors,borderRadius:8,barPercentage:.62,xAxisID:'x',yAxisID:'y'},
+      {label:'ROI',data:plROIPoints,type:'line',borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',tension:.35,fill:false,
+       pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:'#2563eb',pointBorderWidth:2,xAxisID:'x1',yAxisID:'y'}
     ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',interaction:{intersect:false,mode:'index'},
       plugins:{legend:{position:'top',align:'end',labels:{usePointStyle:true,boxWidth:8,padding:14}},
         title:{display:true,text:'版位 花费 & ROI',font:{size:15,weight:'700'},color:'#334155',padding:{top:4,bottom:14}},
-        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.yAxisID==='y1'?'ROI: '+c.raw.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString()+' ('+(plTotal>0?(c.raw/plTotal*100).toFixed(1):0)+'%)';}}}},
+        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.xAxisID==='x1'?'ROI: '+c.parsed.x.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString()+' ('+(plTotal>0?(c.raw/plTotal*100).toFixed(1):0)+'%)';}}}},
       scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12,weight:'600'},color:'#334155'}},
         x:{beginAtZero:true,grid:{color:'#edf2f7'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
-        y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
+        x1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
   }
   
   // 4. 性别占比 环形饼图+中心文字
