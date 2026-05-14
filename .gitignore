@@ -1,5 +1,8 @@
 __pycache__/
+*.pyc
 fb_ads_data.json
 fb_audience_data.json
+fb_conversion_campaigns.json
 fb_audience_cache/
-*.pyc
+user_config.json
+.uploads/

@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Facebook Ads 周报系统 - 模块化版</title>
+<title>英法德意数据分析看板</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -175,23 +175,16 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <body>
 <div class="app">
 <div class="sidebar">
-<div class="sb-hd"><div class="logo"><div class="logo-i">&#128202;</div><span>FB Ads 周报</span></div></div>
+<div class="sb-hd"><div class="logo"><div class="logo-i">&#128202;</div><span>英法德意数据分析看板</span></div></div>
 <div class="nav">
-<div class="nav-t">报告模块</div>
-<div class="nl active" onclick="go('sec-header')"><span class="ni">&#128203;</span><span>1. 报告头部</span></div>
-<div class="nl" onclick="go('sec-kpi')"><span class="ni">&#127919;</span><span>2. 关键指标</span></div>
-<div class="nl" onclick="go('sec-work')"><span class="ni">&#9989;</span><span>3. 重点工作</span></div>
-<div class="nl" onclick="go('sec-issues')"><span class="ni">&#9888;</span><span>4. 内部问题</span></div>
-<div class="nl" onclick="go('sec-help')"><span class="ni">&#128587;</span><span>5. 领导协助</span></div>
-<div class="nl" onclick="go('sec-innovation')"><span class="ni">&#128161;</span><span>6. 创新思考</span></div>
 <div class="nav-t">数据分析</div>
-<div class="nl" onclick="go('sec-sync')"><span class="ni">&#128260;</span><span>7. 同步数据概览</span></div>
-<div class="nl" onclick="go('sec-weekly')"><span class="ni">&#128197;</span><span>8. 站点数据对比</span></div>
-<div class="nl" onclick="go('sec-product')"><span class="ni">&#128230;</span><span>9. 产品投放明细</span></div>
-<div class="nl" onclick="go('sec-budget')"><span class="ni">&#128176;</span><span>10. 预算对比</span></div>
-<div class="nl" onclick="go('sec-productcmp')"><span class="ni">&#128270;</span><span>11. 产品对比</span></div>
-<div class="nl" onclick="go('sec-charts')"><span class="ni">&#128202;</span><span>12. 站点对比看板</span></div>
-<div class="nl" onclick="go('sec-audience')"><span class="ni">&#128101;</span><span>13. 受众分析</span></div>
+<div class="nl active" onclick="go('sec-sync')"><span class="ni">&#128260;</span><span>1. 同步数据概览</span></div>
+<div class="nl" onclick="go('sec-weekly')"><span class="ni">&#128197;</span><span>2. 站点数据对比</span></div>
+<div class="nl" onclick="go('sec-product')"><span class="ni">&#128230;</span><span>3. 产品投放明细</span></div>
+<div class="nl" onclick="go('sec-budget')"><span class="ni">&#128176;</span><span>4. 预算对比</span></div>
+<div class="nl" onclick="go('sec-productcmp')"><span class="ni">&#128270;</span><span>5. 产品对比</span></div>
+<div class="nl" onclick="go('sec-charts')"><span class="ni">&#128202;</span><span>6. 站点对比看板</span></div>
+<div class="nl" onclick="go('sec-audience')"><span class="ni">&#128101;</span><span>7. 受众分析</span></div>
 </div>
 <div class="sb-ft"><span class="sd"></span><span>数据已自动保存</span></div>
 </div>
@@ -207,92 +200,15 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="ca">
 <div id="syncArea"></div>
 
-<!-- ========== 报告头部 ========== -->
-<div class="sec" id="sec-header">
-<div class="sh" onclick="tog('sec-header')"><div class="sh-l"><span class="si">&#128203;</span><span class="st">关键指标</span></div><span class="stg" id="tg-sec-header">&#9660;</span></div>
-<div class="sbd" id="bd-sec-header">
-<div class="header-info">
-<div><label>总结部门</label><input id="hDept" placeholder="请输入部门名称" onchange="S.dept=this.value;save();renderHeaderInfo()"></div>
-<div><label>报告人</label><input id="hReporter" placeholder="请输入报告人姓名" onchange="S.reporter=this.value;save();renderHeaderInfo()"></div>
-<div><label>报告日期</label><input type="date" id="hDate" onchange="S.reportDate=this.value;save();renderHeaderInfo()"></div>
-</div>
-<div id="headerInfoDisplay" style="padding:12px 16px;background:#f8fafc;border-radius:var(--r);font-size:.9rem;color:var(--t2);border:1px solid var(--bd);"></div>
-</div>
-</div>
-
-<!-- ========== 关键指标达成情况 ========== -->
-<div class="sec" id="sec-kpi">
-<div class="sh" onclick="tog('sec-kpi')"><div class="sh-l"><span class="si">&#127919;</span><span class="st">关键指标情况</span></div><span class="stg" id="tg-sec-kpi">&#9660;</span></div>
-<div class="sbd" id="bd-sec-kpi">
-<div class="filter-bar">
-<span>&#128197; 日期:</span>
-<input type="date" id="kpiStart">
-<span>~</span>
-<input type="date" id="kpiEnd">
-<button class="btn btn-sm btn-p" onclick="applyKpiFilter()">确认</button>
-<button class="btn btn-sm btn-s" onclick="clearKpiFilter()">清除</button>
-<span class="filter-info" id="kpiFilterInfo">全部数据</span>
-</div>
-<div class="tbl-wrap">
-<table><thead><tr><th>关键指标</th><th>目标</th><th>实际值</th><th>达成率</th><th>备注</th><th></th></tr></thead><tbody id="kpiTb"></tbody></table>
-</div>
-<button class="arb" onclick="addRow('kpi')">+ 添加一行</button>
-</div>
-</div>
-
-<!-- ========== 重点工作完成情况 ========== -->
-<div class="sec" id="sec-work">
-<div class="sh" onclick="tog('sec-work')"><div class="sh-l"><span class="si">&#128640;</span><span class="st">重点工作完成情况</span></div><span class="stg" id="tg-sec-work">&#9660;</span></div>
-<div class="sbd" id="bd-sec-work">
-<div class="tbl-wrap">
-<table><thead><tr><th>重点工作</th><th>工作描述</th><th>成果描述</th><th>价值贡献</th><th>备注</th><th></th></tr></thead><tbody id="workTb"></tbody></table>
-</div>
-<button class="arb" onclick="addRow('work')">+ 添加一行</button>
-</div>
-</div>
-
-<!-- ========== 内部存在的问题 ========== -->
-<div class="sec" id="sec-issues">
-<div class="sh" onclick="tog('sec-issues')"><div class="sh-l"><span class="si">&#9888;&#65039;</span><span class="st">内部存在的问题</span></div><span class="stg" id="tg-sec-issues">&#9660;</span></div>
-<div class="sbd" id="bd-sec-issues">
-<div class="tbl-wrap">
-<table><thead><tr><th>存在问题</th><th>问题简述</th><th>根因分析</th><th>计划举措</th><th>备注</th><th></th></tr></thead><tbody id="issuesTb"></tbody></table>
-</div>
-<button class="arb" onclick="addRow('issues')">+ 添加一行</button>
-</div>
-</div>
-
-<!-- ========== 需要领导协助 ========== -->
-<div class="sec" id="sec-help">
-<div class="sh" onclick="tog('sec-help')"><div class="sh-l"><span class="si">&#129309;</span><span class="st">需要领导协助</span></div><span class="stg" id="tg-sec-help">&#9660;</span></div>
-<div class="sbd" id="bd-sec-help">
-<div class="tbl-wrap">
-<table><thead><tr><th>存在问题</th><th>问题简述</th><th>是否需要协助</th><th>协助方向</th><th>备注</th><th></th></tr></thead><tbody id="helpTb"></tbody></table>
-</div>
-<button class="arb" onclick="addRow('help')">+ 添加一行</button>
-</div>
-</div>
-
-<!-- ========== 其他工作思考与创新 ========== -->
-<div class="sec" id="sec-innovation">
-<div class="sh" onclick="tog('sec-innovation')"><div class="sh-l"><span class="si">&#128161;</span><span class="st">其他工作思考与创新</span></div><span class="stg" id="tg-sec-innovation">&#9660;</span></div>
-<div class="sbd" id="bd-sec-innovation">
-<div class="tbl-wrap">
-<table><thead><tr><th>类别</th><th>创新思考简述</th><th>备注</th><th></th></tr></thead><tbody id="innovationTb"></tbody></table>
-</div>
-<button class="arb" onclick="addRow('innovation')">+ 添加一行</button>
-</div>
-</div>
-
 <!-- ========== FB同步数据概览 ========== -->
 <div class="sec" id="sec-sync">
 <div class="sh" onclick="tog('sec-sync')"><div class="sh-l"><span class="si">&#128260;</span><span class="st">FB同步数据概览</span></div><span class="stg" id="tg-sec-sync">&#9660;</span></div>
 <div class="sbd" id="bd-sec-sync">
 <div class="filter-bar">
 <span>&#128197; 日期:</span>
-<input type="date" id="syncStart">
+<input type="date" id="syncStart" onchange="S.filters.sync.start=this.value;save()">
 <span>~</span>
-<input type="date" id="syncEnd">
+<input type="date" id="syncEnd" onchange="S.filters.sync.end=this.value;save()">
 <button class="btn btn-sm btn-p" onclick="applySyncFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearSyncFilter()">清除</button>
 <span class="filter-info" id="syncFilterInfo">全部数据</span>
@@ -329,9 +245,9 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sbd" id="bd-sec-weekly">
 <div class="filter-bar">
 <span>&#128197; 日期:</span>
-<input type="date" id="weeklyStart">
+<input type="date" id="weeklyStart" onchange="S.filters.weekly.start=this.value;save()">
 <span>~</span>
-<input type="date" id="weeklyEnd">
+<input type="date" id="weeklyEnd" onchange="S.filters.weekly.end=this.value;save()">
 <button class="btn btn-sm btn-p" onclick="applyWeeklyFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearWeeklyFilter()">清除</button>
 <span class="filter-info" id="weeklyFilterInfo">全部数据</span>
@@ -358,9 +274,9 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sbd" id="bd-sec-product">
 <div class="filter-bar">
 <span>&#128197; 日期:</span>
-<input type="date" id="productStart">
+<input type="date" id="productStart" onchange="S.filters.product.start=this.value;save()">
 <span>~</span>
-<input type="date" id="productEnd">
+<input type="date" id="productEnd" onchange="S.filters.product.end=this.value;save()">
 <button class="btn btn-sm btn-p" onclick="applyProductFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearProductFilter()">清除</button>
 <span class="filter-info" id="productFilterInfo">全部数据</span>
@@ -385,9 +301,9 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sbd" id="bd-sec-budget">
 <div class="filter-bar">
 <span>&#128197; 日期:</span>
-<input type="date" id="budgetStart">
+<input type="date" id="budgetStart" onchange="S.filters.budget.start=this.value;save()">
 <span>~</span>
-<input type="date" id="budgetEnd">
+<input type="date" id="budgetEnd" onchange="S.filters.budget.end=this.value;save()">
 <button class="btn btn-sm btn-p" onclick="applyBudgetFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearBudgetFilter()">清除</button>
 <span class="filter-info" id="budgetFilterInfo">全部数据</span>
@@ -403,15 +319,15 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="filter-bar" style="flex-wrap:wrap;gap:8px">
 <div style="display:flex;align-items:center;gap:8px;background:#f0f4ff;padding:6px 12px;border-radius:6px">
 <span>&#127919; 周期A:</span>
-<input type="date" id="pcmpStartA">
+<input type="date" id="pcmpStartA" onchange="S.filters.pcmp.startA=this.value;save()">
 <span>~</span>
-<input type="date" id="pcmpEndA">
+<input type="date" id="pcmpEndA" onchange="S.filters.pcmp.endA=this.value;save()">
 </div>
 <div style="display:flex;align-items:center;gap:8px;background:#fff7ed;padding:6px 12px;border-radius:6px">
 <span>&#128200; 周期B:</span>
-<input type="date" id="pcmpStartB">
+<input type="date" id="pcmpStartB" onchange="S.filters.pcmp.startB=this.value;save()">
 <span>~</span>
-<input type="date" id="pcmpEndB">
+<input type="date" id="pcmpEndB" onchange="S.filters.pcmp.endB=this.value;save()">
 </div>
 <button class="btn btn-sm btn-p" onclick="applyPcmpFilter()">对比</button>
 <button class="btn btn-sm btn-s" onclick="clearPcmpFilter()">清除</button>
@@ -441,9 +357,9 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sbd" id="bd-sec-charts">
 <div class="filter-bar">
 <span>&#128197; 日期:</span>
-<input type="date" id="chartStart">
+<input type="date" id="chartStart" onchange="S.filters.chart.start=this.value;save()">
 <span>~</span>
-<input type="date" id="chartEnd">
+<input type="date" id="chartEnd" onchange="S.filters.chart.end=this.value;save()">
 <button class="btn btn-sm btn-p" onclick="applyChartFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearChartFilter()">清除</button>
 <span class="filter-info" id="chartFilterInfo">全部数据</span>
@@ -462,11 +378,11 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sbd" id="bd-sec-audience">
 <div class="filter-bar" style="flex-wrap:wrap;gap:8px;align-items:center">
 <span>&#128197; 日期:</span>
-<input type="date" id="audStart">
+<input type="date" id="audStart" onchange="S.filters.audience.start=this.value;save()">
 <span>~</span>
-<input type="date" id="audEnd">
-<button class="btn btn-sm btn-p" onclick="fetchAudience()">&#128269; 获取受众数据</button>
-<button class="btn btn-sm btn-p" style="background:#f59e0b" onclick="fetchCustomerType()">&#128100; 新老客户</button>
+<input type="date" id="audEnd" onchange="S.filters.audience.end=this.value;save()">
+<button class="btn btn-sm btn-p" onclick="fetchAudience(this)">&#128269; 获取受众数据</button>
+<button class="btn btn-sm btn-p" style="background:#f59e0b" onclick="fetchCustomerType(this)">&#128100; 新老客户</button>
 <button class="btn btn-sm btn-s" onclick="refreshAudience()">刷新</button>
 <span class="filter-info" id="audFilterInfo">暂无受众数据</span>
 </div>
@@ -483,7 +399,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="chart-box"><canvas id="audGenderPie"></canvas></div>
 </div>
 <div class="chart-row chart-row-3">
-<div class="chart-box"><canvas id="audTypeChart"></canvas></div>
+<div class="chart-box"><canvas id="audPlacementChart"></canvas></div>
 <div class="chart-box chart-box-wide" id="audSpendBox"><canvas id="audNewOldSpend"></canvas></div>
 </div>
 <div class="chart-row chart-row-2">
@@ -511,11 +427,7 @@ var cColors = ['#3b82f6','#ef4444','#f59e0b','#8b5cf6'];
 
 // 统一状态管理
 var S = {
-  // 基础信息
-  dept: '独立站销售部',
-  reporter: '李阶熊',
-  reportDate: '',
-  month: 5,
+  month: new Date().getMonth() + 1,
   
   // 同步数据（核心数据源）
   syncData: {
@@ -528,27 +440,14 @@ var S = {
   
   // 各模块筛选状态
   filters: {
-    kpi: {start: '', end: ''},
     sync: {start: '', end: ''},
     weekly: {start: '', end: '', activeTab: '英国'},
-    product: {start: '', end: '', activeTab: '清库投放数据', page: 1},
+    product: {start: '', end: '', activeTab: '电子系列', page: 1},
     budget: {start: '', end: ''},
     chart: {start: '', end: '', activeTab: '全部'},
     pcmp: {startA: '', endA: '', startB: '', endB: '', activeTab: '整站数据'},
     audience: {start: '', end: ''}
   },
-  
-  // 手动输入的数据
-  kpi: [
-    {name: '本月ROI完成情况', target: '', actual: '', note: ''},
-    {name: '本月销售额完成情况', target: '', actual: '', note: ''},
-    {name: '本月花费完成情况', target: '', actual: '', note: ''},
-    {name: '本月点击量完成情况', target: '', actual: '', note: ''}
-  ],
-  work: [{name:'', desc:'', result:'', value:'', note:''}],
-  issues: [{name:'', desc:'', root:'', plan:'', note:''}],
-  help: [{name:'', desc:'', need:'', dir:'', note:''}],
-  innovation: [{cat:'', desc:'', note:''}],
   
   // 预算数据
   budget: {
@@ -577,19 +476,18 @@ Object.keys(PRODUCT_CATEGORIES).forEach(function(cat) {
 });
 
 /* ==================== 本地存储 ==================== */
+function setDateInput(id, val) {
+  // 安全设置日期输入框的值，元素不存在时跳过
+  if (!val) return;
+  var el = document.getElementById(id);
+  if (el) el.value = val;
+}
+
 function save() {
   // 保存配置到服务端
   var config = {
-    dept: S.dept,
-    reporter: S.reporter,
-    reportDate: S.reportDate,
     month: S.month,
     filters: S.filters,
-    kpi: S.kpi,
-    work: S.work,
-    issues: S.issues,
-    help: S.help,
-    innovation: S.innovation,
     budget: S.budget
   };
   fetch('/api/config', {
@@ -607,16 +505,8 @@ function loadConfig(callback) {
   fetch('/api/config').then(function(r) { return r.json(); }).then(function(result) {
     if (result.success && result.config) {
       var c = result.config;
-      if (c.dept) S.dept = c.dept;
-      if (c.reporter) S.reporter = c.reporter;
-      if (c.reportDate !== undefined) S.reportDate = c.reportDate;
       if (c.month !== undefined) S.month = c.month;
       if (c.filters) S.filters = Object.assign(S.filters, c.filters);
-      if (c.kpi) S.kpi = c.kpi;
-      if (c.work) S.work = c.work;
-      if (c.issues) S.issues = c.issues;
-      if (c.help) S.help = c.help;
-      if (c.innovation) S.innovation = c.innovation;
       if (c.budget) S.budget = Object.assign(S.budget, c.budget);
     }
     if (callback) callback();
@@ -626,16 +516,8 @@ function loadConfig(callback) {
       var s = localStorage.getItem(SK);
       if (s) {
         var d = JSON.parse(s);
-        if (d.dept) S.dept = d.dept;
-        if (d.reporter) S.reporter = d.reporter;
-        if (d.reportDate !== undefined) S.reportDate = d.reportDate;
         if (d.month !== undefined) S.month = d.month;
         if (d.filters) S.filters = Object.assign(S.filters, d.filters);
-        if (d.kpi) S.kpi = d.kpi;
-        if (d.work) S.work = d.work;
-        if (d.issues) S.issues = d.issues;
-        if (d.help) S.help = d.help;
-        if (d.innovation) S.innovation = d.innovation;
         if (d.budget) S.budget = Object.assign(S.budget, d.budget);
       }
     } catch(e2) {}
@@ -659,11 +541,14 @@ function loadSyncData(callback) {
       if (S.syncData.dateRange.start && S.syncData.dateRange.end) {
         var syncStart = S.syncData.dateRange.start;
         var syncEnd = S.syncData.dateRange.end;
-        var filterIds = ['kpi', 'sync', 'weekly', 'product', 'budget', 'chart'];
+        var filterIds = ['sync', 'weekly', 'product', 'budget', 'chart'];
         filterIds.forEach(function(f) {
           if (!S.filters[f].start) S.filters[f].start = syncStart;
           if (!S.filters[f].end) S.filters[f].end = syncEnd;
         });
+        // pcmp 结构特殊
+        if (S.filters.pcmp && !S.filters.pcmp.startA) { S.filters.pcmp.startA = syncStart; S.filters.pcmp.endA = syncEnd; S.filters.pcmp.startB = syncStart; S.filters.pcmp.endB = syncEnd; }
+        if (S.filters.audience && !S.filters.audience.start) { S.filters.audience.start = syncStart; S.filters.audience.end = syncEnd; }
       }
       if (callback) callback();
     } else {
@@ -733,149 +618,6 @@ function onMonthChange() {
   S.month = +document.getElementById('rMonth').value;
   save();
   toast('已切换到 ' + S.month + ' 月', 'ok');
-}
-
-/* ==================== 模块1: 报告头部 ==================== */
-function renderModule1() {
-  document.getElementById('hDept').value = S.dept || '';
-  document.getElementById('hReporter').value = S.reporter || '';
-  document.getElementById('hDate').value = S.reportDate || '';
-  if (!S.reportDate) {
-    var today = new Date();
-    S.reportDate = today.toISOString().split('T')[0];
-    document.getElementById('hDate').value = S.reportDate;
-    save();
-  }
-  renderHeaderInfo();
-}
-
-function renderHeaderInfo() {
-  var info = '当前报告: ' + (S.dept || '未填写部门') + ' | 报告人: ' + (S.reporter || '未填写') + ' | 日期: ' + (S.reportDate || '未选择');
-  if (S.syncData.dateRange.start && S.syncData.dateRange.end) {
-    info += ' | 数据范围: ' + S.syncData.dateRange.start + ' 至 ' + S.syncData.dateRange.end;
-  }
-  document.getElementById('headerInfoDisplay').textContent = info;
-}
-
-/* ==================== 模块2: 关键指标 ==================== */
-function applyKpiFilter() {
-  S.filters.kpi.start = document.getElementById('kpiStart').value;
-  S.filters.kpi.end = document.getElementById('kpiEnd').value;
-  save();
-  renderModule2();
-}
-
-function clearKpiFilter() {
-  document.getElementById('kpiStart').value = '';
-  document.getElementById('kpiEnd').value = '';
-  S.filters.kpi.start = '';
-  S.filters.kpi.end = '';
-  save();
-  renderModule2();
-}
-
-function renderModule2() {
-  var start = S.filters.kpi.start;
-  var end = S.filters.kpi.end;
-  var info = start && end ? start + ' ~ ' + end : '全部数据';
-  document.getElementById('kpiFilterInfo').textContent = info;
-  
-  // 如果有同步数据，自动填入实际值
-  var filteredData = getFilteredSyncData(start, end);
-  var totalSales = 0, totalSpend = 0, totalConversions = 0, totalClicks = 0;
-  filteredData.forEach(function(site) {
-    totalSales += site.sales || 0;
-    totalSpend += site.spend || 0;
-    totalConversions += site.conversions || 0;
-    totalClicks += site.clicks || 0;
-  });
-  var avgROI = totalSpend > 0 ? totalSales / totalSpend : 0;
-  
-  // 更新KPI实际值
-  S.kpi.forEach(function(k) {
-    if (k.name.includes('ROI') && avgROI > 0) k.actual = avgROI.toFixed(2);
-    if (k.name.includes('销售额') && totalSales > 0) k.actual = Math.round(totalSales).toString();
-    if (k.name.includes('花费') && totalSpend > 0) k.actual = Math.round(totalSpend).toString();
-    if (k.name.includes('点击量') && totalClicks > 0) k.actual = Math.round(totalClicks).toString();
-  });
-  
-  var tb = document.getElementById('kpiTb');
-  var h = '';
-  S.kpi.forEach(function(k, i) {
-    var badge = '';
-    if (k.target && k.actual) {
-      var r = parseFloat(k.actual) / parseFloat(k.target);
-      var p = (r * 100).toFixed(1) + '%';
-      badge = r >= 1 ? '<span class="badge badge-g">' + p + '</span>' : r >= 0.8 ? '<span class="badge badge-y">' + p + '</span>' : '<span class="badge badge-r">' + p + '</span>';
-    }
-    h += '<tr><td><input value="' + esc(k.name) + '" onchange="S.kpi[' + i + '].name=this.value;save()"></td>';
-    h += '<td><input type="number" placeholder="目标" value="' + esc(k.target) + '" onchange="S.kpi[' + i + '].target=this.value;save();renderModule2()"></td>';
-    h += '<td><input type="number" placeholder="实际值" value="' + esc(k.actual) + '" onchange="S.kpi[' + i + '].actual=this.value;save();renderModule2()"></td>';
-    h += '<td>' + badge + '</td>';
-    h += '<td><input value="' + esc(k.note) + '" onchange="S.kpi[' + i + '].note=this.value;save()"></td>';
-    h += '<td class="ra"><button onclick="delRow(\'kpi\',' + i + ')">删除</button></td></tr>';
-  });
-  tb.innerHTML = h;
-}
-
-/* ==================== 模块3-6: 动态表格 ==================== */
-var TABLE_FIELDS = {
-  work: ['name','desc','result','value','note'],
-  issues: ['name','desc','root','plan','note'],
-  help: ['name','desc','need','dir','note'],
-  innovation: ['cat','desc','note'],
-  kpi: ['name','target','actual','note']
-};
-
-// 需要多行文本框的字段（描述类）
-var TEXTAREA_FIELDS = {
-  work: ['desc', 'result', 'value', 'note'],
-  issues: ['desc', 'root', 'plan', 'note'],
-  help: ['desc', 'need', 'dir', 'note'],
-  innovation: ['desc', 'note'],
-  kpi: ['note']
-};
-
-function renderDynTable(tid, flds) {
-  var tb = document.getElementById(tid + 'Tb');
-  var d = S[tid];
-  var taFlds = TEXTAREA_FIELDS[tid] || [];
-  var h = '';
-  d.forEach(function(row, i) {
-    h += '<tr>';
-    flds.forEach(function(f) {
-      var val = row[f] || '';
-      if (taFlds.indexOf(f) >= 0) {
-        // 多行文本框
-        h += '<td><textarea rows="3" onchange="S.' + tid + '[' + i + '].' + f + '=this.value;save()">' + esc(val) + '</textarea></td>';
-      } else {
-        // 单行输入框
-        h += '<td><input value="' + esc(val) + '" onchange="S.' + tid + '[' + i + '].' + f + '=this.value;save()"></td>';
-      }
-    });
-    h += '<td class="ra"><button onclick="delRow(\'' + tid + '\',' + i + ')">删除</button></td></tr>';
-  });
-  tb.innerHTML = h;
-}
-
-function addRow(t) {
-  var flds = TABLE_FIELDS[t];
-  if (!flds) return;
-  var o = {};
-  flds.forEach(function(f) { o[f] = ''; });
-  S[t].push(o);
-  save();
-  if (t === 'kpi') renderModule2();
-  else renderDynTable(t, flds);
-}
-
-function delRow(t, i) {
-  if (S[t].length <= 1) { toast('至少保留一行', 'warn'); return; }
-  S[t].splice(i, 1);
-  save();
-  var flds = TABLE_FIELDS[t];
-  if (t === 'kpi') renderModule2();
-  else if (flds) renderDynTable(t, flds);
 }
 
 /* ==================== 数据筛选工具函数 ==================== */
@@ -2314,12 +2056,13 @@ function renderPcmpModule() {
 var AUDIENCE_DATA = null;
 var CUSTOMER_TYPE_DATA = null;  // 新老客户分析数据
 
-function fetchAudience() {
+function fetchAudience(el) {
   var sd = document.getElementById('audStart').value;
   var ed = document.getElementById('audEnd').value;
   if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
   
-  var btn = event.target;
+  var btn = el || event.target;
+  var originalText = btn.textContent;
   btn.textContent = '获取中...';
   btn.disabled = true;
   document.getElementById('audFilterInfo').textContent = '正在获取受众数据...';
@@ -2348,7 +2091,7 @@ function fetchAudience() {
   }).catch(function(e) {
     toast('请求失败: ' + e.message, 'err');
   }).finally(function() {
-    btn.textContent = '🔍 获取受众数据';
+    btn.textContent = originalText;
     btn.disabled = false;
   });
 }
@@ -2366,7 +2109,6 @@ function updateAudCacheHint() {
 }
 
 function refreshAudience() {
-  // 根据当前选择的日期刷新受众数据（后端已实现按天智能缓存）
   var sd = document.getElementById('audStart').value;
   var ed = document.getElementById('audEnd').value;
   
@@ -2376,46 +2118,48 @@ function refreshAudience() {
   }
   
   var infoEl = document.getElementById('audFilterInfo');
-  infoEl.textContent = '正在刷新...';
+  infoEl.textContent = '正在获取受众数据...';
   
-  // 先获取受众数据（性别/年龄/类型），再获取新老客户数据
+  // 1. 先获取性别/年龄/版位数据
   fetch('/api/audience/fetch', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({start_date: sd, end_date: ed})
   }).then(function(r) { return r.json(); }).then(function(result) {
-    if (result.success) {
-      AUDIENCE_DATA = result.data;
-      S.filters.audience = {start: sd, end: ed};
-      save();
-      var suffix = result.cached ? ' (缓存)' : '';
-      infoEl.textContent = sd + ' ~ ' + ed + suffix;
-      updateAudCacheHint();
-      saveAudienceToLocal();
-      toast('受众数据刷新' + (result.cached ? '命中缓存' : '成功'), 'ok');
-      renderAudienceTabs();
-      renderAudienceModule();
-      
-      // 继续刷新新老客户数据（后端按天缓存，自动跳过已有数据）
-      return fetch('/api/audience/customer-type', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({start_date: sd, end_date: ed})
-      });
-    } else {
-      infoEl.textContent = '刷新失败';
-      toast('刷新失败: ' + (result.message || '未知错误'), 'err');
-      throw new Error('stop');
+    if (!result.success) {
+      infoEl.textContent = '获取失败';
+      toast('受众数据获取失败: ' + (result.message || '未知错误'), 'err');
+      return;
     }
-  }).then(function(r) { return r.json(); }).then(function(result) {
-    if (result.success) {
+    
+    AUDIENCE_DATA = result.data;
+    S.filters.audience = {start: sd, end: ed};
+    save();
+    var suffix = result.cached ? ' (缓存)' : '';
+    infoEl.textContent = sd + ' ~ ' + ed + suffix + '，正在获取新老客户...';
+    updateAudCacheHint();
+    saveAudienceToLocal();
+    renderAudienceTabs();
+    renderAudienceModule();
+    
+    // 2. 获取新老客户数据
+    return fetch('/api/audience/customer-type', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({start_date: sd, end_date: ed})
+    });
+  }).then(function(r) { return r ? r.json() : null; }).then(function(result) {
+    if (result && result.success) {
       CUSTOMER_TYPE_DATA = result.data;
+      saveAudienceToLocal();
+      infoEl.textContent = sd + ' ~ ' + ed + ' (全部数据已刷新)';
       renderAudienceModule();
+      toast('数据刷新完成', 'ok');
+    } else if (result) {
+      toast('新老客户数据获取失败', 'err');
     }
   }).catch(function(e) {
-    if (e.message !== 'stop') {
-      toast('新老客户数据刷新失败: ' + e.message, 'err');
-    }
+    toast('刷新出错: ' + e.message, 'err');
   });
 }
 
@@ -2484,12 +2228,13 @@ function applyAudienceData() {
   renderAudienceModule();
 }
 
-function fetchCustomerType() {
+function fetchCustomerType(el) {
   var sd = document.getElementById('audStart').value;
   var ed = document.getElementById('audEnd').value;
   if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
   
-  var btn = event.target;
+  var btn = el || event.target;
+  var originalText = btn.textContent;
   btn.textContent = '获取中...';
   btn.disabled = true;
   
@@ -2509,7 +2254,7 @@ function fetchCustomerType() {
   }).catch(function(e) {
     toast('请求失败: ' + e.message, 'err');
   }).finally(function() {
-    btn.textContent = '\uD83D\uDC64 新老客户';
+    btn.textContent = originalText;
     btn.disabled = false;
   });
 }
@@ -2541,7 +2286,8 @@ function getAudSiteData(siteName) {
   return {
     gender: (AUDIENCE_DATA.gender || {})[siteName] || {},
     age: (AUDIENCE_DATA.age || {})[siteName] || {},
-    type: (AUDIENCE_DATA.type || {})[siteName] || {}
+    age_gender: (AUDIENCE_DATA.age_gender || {})[siteName] || {},
+    platform_placement: (AUDIENCE_DATA.publisher_platform || {})[siteName] || {}
   };
 }
 
@@ -2589,18 +2335,6 @@ function getActiveAudData(dataKey) {
   return out;
 }
 
-function getActiveTypeData() {
-  if (AUD_ACTIVE_TAB === '全部' || !AUD_ACTIVE_TAB) {
-    var agg = {};
-    AUDIENCE_SITES.forEach(function(site) {
-      var t = (AUDIENCE_DATA.type || {})[site] || {};
-      Object.keys(t).forEach(function(k) { agg[k] = (agg[k] || 0) + t[k]; });
-    });
-    return agg;
-  }
-  return (AUDIENCE_DATA && AUDIENCE_DATA.type && AUDIENCE_DATA.type[AUD_ACTIVE_TAB]) || {};
-}
-
 function renderAudienceOverview() {
   var el = document.getElementById('audOverview');
   if (!el || !AUDIENCE_DATA) return;
@@ -2613,20 +2347,22 @@ function renderAudienceOverview() {
   var maleROI = maleSpend > 0 ? maleSales / maleSpend : 0;
   var femaleROI = femaleSpend > 0 ? femaleSales / femaleSpend : 0;
   
-  var typeAgg = getActiveTypeData();
-  var broadCount = typeAgg['广泛定向'] || 0;
-  var customCount = 0;
-  Object.keys(typeAgg).forEach(function(k) {
-    if (k !== '广泛定向') customCount += typeAgg[k];
+  // 汇总数据
+  var totalSpend = 0, totalSales = 0, totalConv = 0;
+  Object.keys(genderAgg).forEach(function(k) {
+    totalSpend += genderAgg[k].spend || 0;
+    totalSales += genderAgg[k].sales || 0;
+    totalConv += genderAgg[k].conversions || 0;
   });
+  var totalROI = totalSpend > 0 ? totalSales / totalSpend : 0;
   
   var h = '';
   h += '<div class="overview-card" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)"><div class="ov-label">男性花费</div><div class="ov-value">' + fmtMoney(maleSpend) + '</div></div>';
   h += '<div class="overview-card" style="background:linear-gradient(135deg,#ec4899,#f472b6)"><div class="ov-label">女性花费</div><div class="ov-value">' + fmtMoney(femaleSpend) + '</div></div>';
   h += '<div class="overview-card" style="background:linear-gradient(135deg,#10b981,#34d399)"><div class="ov-label">男性ROI</div><div class="ov-value">' + maleROI.toFixed(2) + '</div></div>';
   h += '<div class="overview-card" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)"><div class="ov-label">女性ROI</div><div class="ov-value">' + femaleROI.toFixed(2) + '</div></div>';
-  h += '<div class="overview-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><div class="ov-label">广泛定向</div><div class="ov-value">' + broadCount + ' 组</div></div>';
-  h += '<div class="overview-card" style="background:linear-gradient(135deg,#ef4444,#f87171)"><div class="ov-label">精准定向</div><div class="ov-value">' + customCount + ' 组</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)"><div class="ov-label">总花费</div><div class="ov-value">' + fmtMoney(totalSpend) + '</div></div>';
+  h += '<div class="overview-card" style="background:linear-gradient(135deg,#ef4444,#f87171)"><div class="ov-label">总ROI</div><div class="ov-value">' + totalROI.toFixed(2) + '</div></div>';
   el.innerHTML = h;
 }
 
@@ -2679,26 +2415,27 @@ function renderAudienceCharts() {
           y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
   }
   
-  // 3. 受众类型 横向彩色条
-  var typeAgg = getActiveTypeData();
-  var tCtx = document.getElementById('audTypeChart');
-  if (tCtx) {
-    if (window.audTypeInst) window.audTypeInst.destroy();
-    var tKeys = Object.keys(typeAgg).sort(function(a,b){return typeAgg[b]-typeAgg[a];});
-    var tVals = tKeys.map(function(k){return typeAgg[k];});
-    var tTotal = tVals.reduce(function(a,b){return a+b;},0);
-    var tColors = tKeys.map(function(k){
-      if(k.indexOf('广泛')>=0) return '#6366f1';if(k.indexOf('类似')>=0) return '#8b5cf6';
-      if(k.indexOf('现有')>=0) return '#10b981';if(k.indexOf('互动')>=0) return '#f59e0b';
-      if(k.indexOf('网站')>=0) return '#06b6d4';return '#94a3b8';
-    });
-    window.audTypeInst = new Chart(tCtx,{type:'bar',data:{labels:tKeys,datasets:[
-      {label:'广告组',data:tVals,backgroundColor:tColors,borderRadius:8,barPercentage:.65}
-    ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{title:{display:true,text:'\uD83C\uDFAF 受众类型分布',font:{size:14,weight:'700'},color:'#334155',padding:12},legend:{display:false},
-        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.raw+' 组 ('+(c.raw/tTotal*100).toFixed(1)+'%)';}}}},
-      scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12}}},
-        x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},ticks:{stepSize:Math.ceil(tTotal/5)}}}}});
+  // 3. 版位 花费+ROI 横向条
+  var plAgg = getActiveAudData('publisher_platform');
+  var plCtx = document.getElementById('audPlacementChart');
+  if (plCtx) {
+    if (window.audPlacementInst) window.audPlacementInst.destroy();
+    var plKeys = Object.keys(plAgg).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
+    if (plKeys.length === 0) plKeys = ['暂无数据'];
+    var plSpend = plKeys.map(function(k) { return Math.round((plAgg[k]||{}).spend||0); });
+    var plROI = plKeys.map(function(k) { return (plAgg[k]||{}).roi||0; });
+    var plTotal = plSpend.reduce(function(a,b){return a+b;},0);
+    var plColors = plKeys.map(function(_,i){var t=i/(plKeys.length-1||1);return 'hsl('+(160+t*60)+',65%,'+(45+t*15)+'%)';});
+    window.audPlacementInst = new Chart(plCtx,{type:'bar',data:{labels:plKeys,datasets:[
+      {label:'花费',data:plSpend,backgroundColor:plColors,borderRadius:8,barPercentage:.7,yAxisID:'y'},
+      {label:'ROI',data:plROI,type:'line',borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',tension:.4,fill:true,
+       pointRadius:5,pointBackgroundColor:'#f59e0b',pointBorderColor:'#fff',pointBorderWidth:2,yAxisID:'y1'}
+    ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',interaction:{intersect:false,mode:'index'},
+      plugins:{title:{display:true,text:'\uD83D\uDCEF 版位 花费 & ROI',font:{size:14,weight:'700'},color:'#334155',padding:12},
+        tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.yAxisID==='y1'?'ROI: '+c.raw.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString()+' ('+(plTotal>0?(c.raw/plTotal*100).toFixed(1):0)+'%)';}}}},
+      scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:11}}},
+        x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
+        y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
   }
   
   // 4. 性别占比 环形饼图+中心文字
@@ -2726,6 +2463,7 @@ function renderAudienceTable() {
   
   var genderAgg = getActiveAudData('gender');
   var ageAgg = getActiveAudData('age');
+  var plAgg = getActiveAudData('publisher_platform');
   
   var h = '<div class="tbl-wrap"><table class="pcmp-table"><thead><tr><th>细分维度</th><th>分段</th><th>花费</th><th>销售额</th><th>转化</th><th>ROI</th><th>CPA</th></tr></thead><tbody>';
   
@@ -2745,6 +2483,18 @@ function renderAudienceTable() {
   Object.keys(ageAgg).sort().forEach(function(k) {
     var d = ageAgg[k];
     h += '<tr><td>年龄</td><td><strong>' + k + '</strong></td>';
+    h += '<td>' + fmtMoney(d.spend) + '</td>';
+    h += '<td>' + fmtMoney(d.sales) + '</td>';
+    h += '<td>' + fmtNum(d.conversions) + '</td>';
+    h += '<td><strong>' + d.roi.toFixed(2) + '</strong></td>';
+    h += '<td>' + fmtMoney(d.cpa) + '</td></tr>';
+  });
+  
+  // 版位行（按花费降序）
+  var plKeys = Object.keys(plAgg).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
+  plKeys.forEach(function(k) {
+    var d = plAgg[k];
+    h += '<tr><td>版位</td><td><strong>' + k + '</strong></td>';
     h += '<td>' + fmtMoney(d.spend) + '</td>';
     h += '<td>' + fmtMoney(d.sales) + '</td>';
     h += '<td>' + fmtNum(d.conversions) + '</td>';
@@ -3091,6 +2841,12 @@ function showSyncModal() {
     + '<button class="btn btn-s" onclick="setTM()">本月</button>'
     + '<button class="btn btn-s" onclick="setLM()">上月</button>'
     + '</div></div>'
+    + '<div id="syncTodayWarn" style="display:none;margin:8px 0;padding:10px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;font-size:.82rem;color:#92400e;line-height:1.5">'
+    + '&#9888;&#65039; <strong>提示：</strong>同步范围包含今天，今天数据不完整（花费仍在增长）。第二天同步时旧数据不会自动补全。<br>'
+    + '<label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin-top:6px">'
+    + '<input type="checkbox" id="syncForceRefresh" onchange="onSyncForceChange()" style="width:auto;margin:0"> '
+    + '<span id="syncForceLabel">强制更新最近1天数据（先清除再重新同步）</span></label>'
+    + '</div>'
     + '<div class="sa"><p>&#128230; 将同步以下账户的数据:</p><ul><li>英国站 (SUNLU UK)</li><li>法国站 (SUNLU FR)</li><li>德国站 (SUNLU.DE.WEZO)</li><li>意大利站 (SUNLU IT)</li></ul></div>'
     // 进度展示区域（默认隐藏）
     + '<div id="syncProgress" style="display:none;margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">'
@@ -3108,6 +2864,8 @@ function showSyncModal() {
     + '<div class="mo-f"><button class="btn btn-s" id="syncCancelBtn" onclick="closeSync()">取消</button><button class="btn btn-p" id="syncStartBtn" onclick="execSync()">开始同步</button></div>'
     + '</div>';
   document.body.appendChild(m);
+  // 初始检查是否包含今天
+  setTimeout(checkSyncToday, 100);
 }
 
 function closeSync() {
@@ -3122,6 +2880,7 @@ function setDR(d) {
   function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
   document.getElementById('syncED').value = f(e);
   document.getElementById('syncSD').value = f(s);
+  checkSyncToday();
 }
 
 function setTM() {
@@ -3129,6 +2888,7 @@ function setTM() {
   function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
   document.getElementById('syncSD').value = f(s);
   document.getElementById('syncED').value = f(e);
+  checkSyncToday();
 }
 
 function setLM() {
@@ -3136,12 +2896,50 @@ function setLM() {
   function f(dd) { return dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0'); }
   document.getElementById('syncSD').value = f(s);
   document.getElementById('syncED').value = f(e);
+  checkSyncToday();
+}
+
+function checkSyncToday() {
+  // 检查结束日期是否包含今天，显示/隐藏警告
+  var edEl = document.getElementById('syncED');
+  if (!edEl) return;
+  var edVal = edEl.value;
+  var today = new Date();
+  var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  var warnEl = document.getElementById('syncTodayWarn');
+  if (!warnEl) return;
+  
+  if (edVal >= todayStr) {
+    warnEl.style.display = 'block';
+    // 计算结束日期距离今天的天数
+    var edDate = new Date(edVal);
+    var diffDays = Math.ceil((today - edDate) / 86400000) + 1;
+    diffDays = Math.max(1, diffDays);
+    document.getElementById('syncForceLabel').textContent = '强制更新最近' + diffDays + '天数据（先清除再重新同步）';
+  } else {
+    warnEl.style.display = 'none';
+    document.getElementById('syncForceRefresh').checked = false;
+  }
+}
+
+function onSyncForceChange() {
+  checkSyncToday(); // 刷新标签文案
 }
 
 function execSync() {
   var sd = document.getElementById('syncSD').value, ed = document.getElementById('syncED').value;
   if (!sd || !ed) { toast('请选择日期范围', 'warn'); return; }
   if (new Date(sd) > new Date(ed)) { toast('开始日期不能晚于结束日期', 'warn'); return; }
+  
+  // 检查是否需要强制更新
+  var forceDays = 0;
+  var cb = document.getElementById('syncForceRefresh');
+  if (cb && cb.checked) {
+    var edDate = new Date(ed);
+    var today = new Date();
+    forceDays = Math.ceil((today - edDate) / 86400000) + 1;
+    forceDays = Math.max(1, forceDays);
+  }
   
   // 显示进度区域，隐藏日期选择
   var progEl = document.getElementById('syncProgress');
@@ -3211,10 +3009,12 @@ function execSync() {
   }, pollInterval);
   
   // 发起实际的同步请求
+  var syncBody = {start_date: sd, end_date: ed};
+  if (forceDays > 0) syncBody.force_refresh_days = forceDays;
   fetch('/api/sync', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({start_date: sd, end_date: ed})
+    body: JSON.stringify(syncBody)
   }).catch(function(e) {
     clearInterval(window._syncPollId);
     document.getElementById('syncProgMsg').textContent = '同步失败: ' + e.message;
@@ -3232,7 +3032,7 @@ function reloadAfterSync(sd, ed) {
   
   loadSyncData(function() {
     // 更新所有筛选日期
-    var filterIds = ['kpi', 'sync', 'weekly', 'product', 'budget', 'chart'];
+    var filterIds = ['sync', 'weekly', 'product', 'budget', 'chart'];
     filterIds.forEach(function(f) {
       S.filters[f].start = sd;
       S.filters[f].end = ed;
@@ -3433,12 +3233,6 @@ function mockSyncData(sd, ed) {
 /* ==================== 导出与清空 ==================== */
 function exportData() {
   var exportObj = {
-    header: {dept: S.dept, reporter: S.reporter, reportDate: S.reportDate, month: S.month},
-    kpi: S.kpi,
-    work: S.work,
-    issues: S.issues,
-    help: S.help,
-    innovation: S.innovation,
     syncData: S.syncData,
     exportTime: new Date().toISOString()
   };
@@ -3466,12 +3260,6 @@ function clearAll() {
 
 /* ==================== 渲染全部 ==================== */
 function renderAll() {
-  renderModule1();
-  renderModule2();
-  renderDynTable('work', TABLE_FIELDS.work);
-  renderDynTable('issues', TABLE_FIELDS.issues);
-  renderDynTable('help', TABLE_FIELDS.help);
-  renderDynTable('innovation', TABLE_FIELDS.innovation);
   renderModule7();
   renderWeeklyModule();
   renderProductModule();
@@ -3495,8 +3283,7 @@ loadConfig(function() {
   var defaultStart = fmtLocal(monthStart);
   var defaultEnd = fmtLocal(today);
   
-  // 仅在没有保存的日期时才设置默认值（动态存储用户选择）
-  if (!S.filters.kpi.start) { S.filters.kpi.start = defaultStart; S.filters.kpi.end = defaultEnd; }
+  // 仅在没有保存的日期时才设置默认值
   if (!S.filters.sync.start) { S.filters.sync.start = defaultStart; S.filters.sync.end = defaultEnd; }
   if (!S.filters.weekly.start) { S.filters.weekly.start = defaultStart; S.filters.weekly.end = defaultEnd; }
   if (!S.filters.product.start) { S.filters.product.start = defaultStart; S.filters.product.end = defaultEnd; }
@@ -3504,30 +3291,28 @@ loadConfig(function() {
   if (!S.filters.chart.start) { S.filters.chart.start = defaultStart; S.filters.chart.end = defaultEnd; }
   if (!S.filters.pcmp.startA) { S.filters.pcmp.startA = defaultStart; S.filters.pcmp.endA = defaultEnd; }
   if (!S.filters.pcmp.startB) { S.filters.pcmp.startB = defaultStart; S.filters.pcmp.endB = defaultEnd; }
-  if (!S.filters.audience || !S.filters.audience.start) { S.filters.audience = {start: defaultStart, end: defaultEnd}; }
+  if (!S.filters.audience) { S.filters.audience = {start: defaultStart, end: defaultEnd}; }
   
   // 从服务端加载同步数据，然后再渲染
   loadSyncData(function() {
     
-    // 填充日期输入框
-    if (S.filters.kpi.start) document.getElementById('kpiStart').value = S.filters.kpi.start;
-    if (S.filters.kpi.end) document.getElementById('kpiEnd').value = S.filters.kpi.end;
-    if (S.filters.sync.start) document.getElementById('syncStart').value = S.filters.sync.start;
-    if (S.filters.sync.end) document.getElementById('syncEnd').value = S.filters.sync.end;
-    if (S.filters.weekly.start) document.getElementById('weeklyStart').value = S.filters.weekly.start;
-    if (S.filters.weekly.end) document.getElementById('weeklyEnd').value = S.filters.weekly.end;
-    if (S.filters.product.start) document.getElementById('productStart').value = S.filters.product.start;
-    if (S.filters.product.end) document.getElementById('productEnd').value = S.filters.product.end;
-    if (S.filters.budget.start) document.getElementById('budgetStart').value = S.filters.budget.start;
-    if (S.filters.budget.end) document.getElementById('budgetEnd').value = S.filters.budget.end;
-    if (S.filters.chart.start) document.getElementById('chartStart').value = S.filters.chart.start;
-    if (S.filters.chart.end) document.getElementById('chartEnd').value = S.filters.chart.end;
-    if (S.filters.pcmp.startA) document.getElementById('pcmpStartA').value = S.filters.pcmp.startA;
-    if (S.filters.pcmp.endA) document.getElementById('pcmpEndA').value = S.filters.pcmp.endA;
-    if (S.filters.pcmp.startB) document.getElementById('pcmpStartB').value = S.filters.pcmp.startB;
-    if (S.filters.pcmp.endB) document.getElementById('pcmpEndB').value = S.filters.pcmp.endB;
-    if (S.filters.audience && S.filters.audience.start) document.getElementById('audStart').value = S.filters.audience.start;
-    if (S.filters.audience && S.filters.audience.end) document.getElementById('audEnd').value = S.filters.audience.end;
+    // 填充日期输入框（安全模式：跳过已删除模块的元素）
+    setDateInput('syncStart', S.filters.sync.start);
+    setDateInput('syncEnd', S.filters.sync.end);
+    setDateInput('weeklyStart', S.filters.weekly.start);
+    setDateInput('weeklyEnd', S.filters.weekly.end);
+    setDateInput('productStart', S.filters.product.start);
+    setDateInput('productEnd', S.filters.product.end);
+    setDateInput('budgetStart', S.filters.budget.start);
+    setDateInput('budgetEnd', S.filters.budget.end);
+    setDateInput('chartStart', S.filters.chart.start);
+    setDateInput('chartEnd', S.filters.chart.end);
+    setDateInput('pcmpStartA', S.filters.pcmp.startA);
+    setDateInput('pcmpEndA', S.filters.pcmp.endA);
+    setDateInput('pcmpStartB', S.filters.pcmp.startB);
+    setDateInput('pcmpEndB', S.filters.pcmp.endB);
+    setDateInput('audStart', S.filters.audience && S.filters.audience.start);
+    setDateInput('audEnd', S.filters.audience && S.filters.audience.end);
     
     renderAll();
     
