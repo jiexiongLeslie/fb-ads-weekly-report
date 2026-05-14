@@ -110,6 +110,15 @@ def date_range_days(since, until):
         s += timedelta(days=1)
     return days
 
+def data_dates_for_range(all_data, start_date, end_date):
+    dates = set()
+    for key in ['conversion', 'traffic']:
+        for c in all_data.get(key, {}).get('campaigns', []):
+            d = c.get('date', '')
+            if start_date <= d <= end_date:
+                dates.add(d)
+    return sorted(dates)
+
 # ============ 统一Flask应用 (端口5003) ============
 app = Flask(__name__)
 CORS(app)
@@ -531,6 +540,10 @@ def sync_data():
     rebuild_summaries(all_data, CONFIG['ad_accounts'].keys())
     
     save_data(all_data)
+
+    requested_dates = date_range_days(start_date, end_date)
+    synced_dates = data_dates_for_range(all_data, start_date, end_date)
+    missing_dates = [d for d in requested_dates if d not in synced_dates]
     
     _update_progress(status='done', message='同步完成', site='', chunk='')
     _add_log(f'同步完成! 新增 {new_records} 条, 跳过 {skipped_records} 条')
@@ -540,7 +553,11 @@ def sync_data():
         'data': all_data,
         'new_records': new_records,
         'skipped': skipped_records,
-        'errors': fb_errors
+        'errors': fb_errors,
+        'requested_dates': requested_dates,
+        'synced_dates': synced_dates,
+        'missing_dates': missing_dates,
+        'partial': bool(fb_errors or missing_dates)
     })
 
 @app.route('/api/sync/progress', methods=['GET'])

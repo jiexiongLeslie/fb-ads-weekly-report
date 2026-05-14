@@ -2914,12 +2914,14 @@ function showSyncModal() {
   var start = new Date(today.getFullYear(), today.getMonth(), 1);
   var end = new Date(today);
   function fmtLocal(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  var startValue = S.filters.sync.start || (S.syncData.dateRange && S.syncData.dateRange.start) || fmtLocal(start);
+  var endValue = S.filters.sync.end || (S.syncData.dateRange && S.syncData.dateRange.end) || fmtLocal(end);
   var m = document.createElement('div');
   m.id = 'syncMo';
   m.className = 'mo';
   m.innerHTML = '<div class="mo-c" style="max-width:520px"><div class="mo-h"><h3>&#128260; 同步 Facebook 广告数据</h3><button class="mo-x" onclick="closeSync()">&times;</button></div>'
     + '<div class="mo-b">'
-    + '<div class="dr"><div><label>开始日期:</label><input type="date" id="syncSD" value="' + fmtLocal(start) + '"></div><div><label>结束日期:</label><input type="date" id="syncED" value="' + fmtLocal(end) + '"></div></div>'
+    + '<div class="dr"><div><label>开始日期:</label><input type="date" id="syncSD" value="' + startValue + '"></div><div><label>结束日期:</label><input type="date" id="syncED" value="' + endValue + '"></div></div>'
     + '<div class="qs"><label>快速选择:</label><div class="bg">'
     + '<button class="btn btn-s" onclick="setDR(7)">最近7天</button>'
     + '<button class="btn btn-s" onclick="setDR(30)">最近30天</button>'
@@ -3045,6 +3047,7 @@ function execSync() {
   cancelBtn.textContent = '后台运行';
   
   document.getElementById('syncProgMsg').textContent = '正在连接...';
+  window._lastSyncResult = null;
   
   // 启动轮询
   var pollInterval = 800;
@@ -3081,7 +3084,14 @@ function execSync() {
       if (p.status === 'done') {
         clearInterval(window._syncPollId);
         window._syncPollId = null;
-        document.getElementById('syncProgMsg').textContent = '同步完成! 刷新页面...';
+        var finalResult = window._lastSyncResult || {};
+        if (finalResult.partial) {
+          var miss = (finalResult.missing_dates || []).slice(0, 5).join(', ');
+          document.getElementById('syncProgMsg').textContent = '同步完成，但有日期缺失' + (miss ? ': ' + miss : '') + '，请查看日志';
+          toast('同步完成，但部分日期缺失或有FB错误', 'warn');
+        } else {
+          document.getElementById('syncProgMsg').textContent = '同步完成! 刷新页面...';
+        }
         document.getElementById('syncProgBar').style.width = '100%';
         document.getElementById('syncProgPct').textContent = '100%';
         
@@ -3100,6 +3110,24 @@ function execSync() {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(syncBody)
+  }).then(function(r) {
+    return r.json().then(function(result) {
+      window._lastSyncResult = result;
+      if (!r.ok || !result.success) {
+        throw new Error(result.message || result.error || ('HTTP ' + r.status));
+      }
+      if (result.partial) {
+        var missing = (result.missing_dates || []).join(', ');
+        var errors = (result.errors || []).slice(0, 3).join('；');
+        var logEl = document.getElementById('syncLogs');
+        if (logEl) {
+          logEl.innerHTML += '<div>WARN missing dates: ' + esc(missing || '-') + '</div>';
+          if (errors) logEl.innerHTML += '<div>WARN fb errors: ' + esc(errors) + '</div>';
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+      }
+      return result;
+    });
   }).catch(function(e) {
     clearInterval(window._syncPollId);
     document.getElementById('syncProgMsg').textContent = '同步失败: ' + e.message;
