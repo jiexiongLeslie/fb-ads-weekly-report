@@ -2371,7 +2371,7 @@ function renderAudienceOverview() {
   
   // 汇总数据
   var totalSpend = 0, totalSales = 0, totalConv = 0;
-  Object.keys(genderAgg).forEach(function(k) {
+  Object.keys(genderAgg).filter(function(k){return !isUnknownSegment(k);}).forEach(function(k) {
     totalSpend += genderAgg[k].spend || 0;
     totalSales += genderAgg[k].sales || 0;
     totalConv += genderAgg[k].conversions || 0;
@@ -2402,6 +2402,11 @@ function audPlatformLabel(key) {
 
 function audRoiClass(v) {
   return v >= 10 ? 'high' : v >= 6 ? 'mid' : 'low';
+}
+
+function isUnknownSegment(key) {
+  var v = String(key || '').trim().toLowerCase();
+  return v === 'unknown' || v === '未知' || v === '鏈煡' || v === '未分类' || v === '鏈垎绫?';
 }
 
 function renderAudiencePlacementBoard(plAgg, plKeys) {
@@ -2446,8 +2451,8 @@ function renderAudienceCharts() {
   
   var genderAgg = getActiveAudData('gender');
   var ageAgg = getActiveAudData('age');
-  var genderKeys = Object.keys(genderAgg);
-  var ageKeys = Object.keys(ageAgg).sort();
+  var genderKeys = Object.keys(genderAgg).filter(function(k){return !isUnknownSegment(k);});
+  var ageKeys = Object.keys(ageAgg).filter(function(k){return !isUnknownSegment(k);}).sort();
   
   // 1. 性别 花费+ROI 双轴图
   var gCtx = document.getElementById('audGenderChart');
@@ -2496,7 +2501,7 @@ function renderAudienceCharts() {
   var plCtx = document.getElementById('audPlacementChart');
   if (plCtx) {
     if (window.audPlacementInst) window.audPlacementInst.destroy();
-    var plKeys = Object.keys(plAgg).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
+    var plKeys = Object.keys(plAgg).filter(function(k){return !isUnknownSegment(k);}).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
     renderAudiencePlacementBoard(plAgg, plKeys);
     if (plKeys.length === 0) plKeys = ['暂无数据'];
     var plSpend = plKeys.map(function(k) { return Math.round((plAgg[k]||{}).spend||0); });
@@ -2549,7 +2554,7 @@ function renderAudienceTable() {
   
   // 性别行
   var gnMap = {'male':'男','female':'女','unknown':'未知'};
-  Object.keys(genderAgg).forEach(function(k) {
+  Object.keys(genderAgg).filter(function(k){return !isUnknownSegment(k);}).forEach(function(k) {
     var d = genderAgg[k];
     h += '<tr><td>性别</td><td><strong>' + (gnMap[k]||k) + '</strong></td>';
     h += '<td>' + fmtMoney(d.spend) + '</td>';
@@ -2560,7 +2565,7 @@ function renderAudienceTable() {
   });
   
   // 年龄行
-  Object.keys(ageAgg).sort().forEach(function(k) {
+  Object.keys(ageAgg).filter(function(k){return !isUnknownSegment(k);}).sort().forEach(function(k) {
     var d = ageAgg[k];
     h += '<tr><td>年龄</td><td><strong>' + k + '</strong></td>';
     h += '<td>' + fmtMoney(d.spend) + '</td>';
@@ -2571,7 +2576,7 @@ function renderAudienceTable() {
   });
   
   // 版位行（按花费降序）
-  var plKeys = Object.keys(plAgg).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
+  var plKeys = Object.keys(plAgg).filter(function(k){return !isUnknownSegment(k);}).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
   plKeys.forEach(function(k) {
     var d = plAgg[k];
     h += '<tr><td>版位</td><td><strong>' + k + '</strong></td>';
