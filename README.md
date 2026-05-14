@@ -1,84 +1,76 @@
-# Facebook Ads 周报系统
+# Facebook Ads Weekly Report
 
-## 📁 文件结构
+Local Flask app for syncing Facebook Ads data and viewing the weekly report.
 
-```
+## Structure
+
+```text
 trea_al/
-├── weekly-report.html          # 前端周报页面（主入口）
-├── fb_ads_data.json            # 同步的广告数据
-├── 启动后端服务.ps1            # PowerShell 启动脚本（推荐）
-├── 启动后端服务.bat            # CMD 启动脚本（备用）
-├── README.md                   # 使用说明
-└── backend/
-    ├── server.py               # 后端服务（Facebook API）
-    └── test_api.py             # API 测试脚本
+├─ weekly-report.html          Frontend report page
+├─ backend/
+│  ├─ server.py                Flask app and API server
+│  └─ test_api.py              API smoke test
+├─ fb_ads_data.json            Synced ad data, ignored by git
+├─ fb_audience_data.json       Audience cache, ignored by git
+├─ fb_audience_cache/          Daily audience cache, ignored by git
+├─ start.bat                   Start in background and open browser
+├─ start-background.bat        Start service in background only
+└─ install-auto-start.bat      Register Windows logon auto start
 ```
 
-## 🚀 快速开始
+## Run
 
-### 1. 启动后端服务
+Double-click `start.bat`, or run:
 
-**方式一：PowerShell（推荐）**
 ```powershell
-# 在 PowerShell 中执行
-.\启动后端服务.ps1
+.\start.bat
 ```
 
-或右键点击 `启动后端服务.ps1` → 选择「使用 PowerShell 运行」
+The app runs at:
 
-**方式二：CMD（备用）**
-```cmd
-双击运行：启动后端服务.bat
+```text
+http://localhost:5003
 ```
 
-**方式三：手动执行**
-```bash
-cd backend
-python server.py
+## Auto Start
+
+Run `install-auto-start.bat` once. It creates a Windows Scheduled Task named
+`FB Ads Weekly Report`, starts the service on user logon, and launches it once
+immediately.
+
+Logs are written to `logs/server.log`.
+
+## Configuration
+
+Facebook credentials are read from user environment variables:
+
+```text
+FB_APP_ID
+FB_APP_SECRET
+FB_ACCESS_TOKEN
+FB_BUSINESS_ID
+FB_REPORT_PORT
 ```
 
-### 2. 打开周报页面
+`FB_REPORT_PORT` is optional and defaults to `5003`.
 
-双击 `weekly-report.html` 用浏览器打开
+## API
 
-### 3. 同步 Facebook 数据
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/api/sync` | POST | Sync ad data |
+| `/api/sync/progress` | GET | Sync progress |
+| `/api/data` | GET | Read saved data |
+| `/api/config` | GET/POST | Read or save UI config |
+| `/api/audience/fetch` | POST | Fetch audience breakdowns |
+| `/api/audience/customer-type` | POST | Fetch customer type data |
+| `/api/accounts` | GET | List configured ad accounts |
+| `/api/token-status` | GET | Check token status |
 
-1. 点击页面顶部的「同步FB数据」按钮
-2. 在弹窗中选择日期范围：
-   - 开始日期 / 结束日期
-   - 或使用快速选择（最近7天/30天/90天、本月、上月）
-3. 点击「开始同步」
-4. 同步完成后，页面会显示数据时间范围和详细统计
+## Smoke Test
 
-## 🔌 API 端点
+Start the service first, then run:
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/api/sync` | POST | 同步广告数据 |
-| `/api/data` | GET | 获取已保存数据 |
-| `/api/accounts` | GET | 获取账户列表 |
-| `/api/token-status` | GET | 检查 Token 状态 |
-
-## ⚙️ 配置信息
-
-已配置的 Facebook 广告账户：
-- 英国站 (SUNLU UK) - ID: 1450908062157108
-- 法国站 (SUNLU FR) - ID: 1263004614711858
-- 德国站 (SUNLU.DE.WEZO) - ID: 567253999563537
-- 意大利站 (SUNLU IT) - ID: 2194106121024447
-
-## 📝 注意事项
-
-- 后端服务运行在 `http://localhost:5000`
-- Token 已设置为永久有效
-- 数据自动保存到 `fb_ads_data.json`
-- 首次运行可能需要安装依赖（脚本会自动检查并安装）
-
-## 🔧 故障排除
-
-**PowerShell 执行策略问题**
-如果提示「无法加载脚本，因为在此系统上禁止运行脚本」，请执行：
 ```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+py backend\test_api.py
 ```
-然后选择 `Y` 确认。

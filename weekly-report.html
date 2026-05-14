@@ -140,7 +140,26 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 .chart-box canvas{max-height:280px}
 .chart-box-wide{grid-column:span 2}
 .chart-box-wide canvas{max-height:320px !important}
+.placement-box{grid-column:span 3;display:grid;grid-template-columns:minmax(320px,1.05fr) minmax(360px,1fr);gap:16px;align-items:stretch}
+.placement-chart-pane{min-width:0;height:360px;position:relative}
+.placement-chart-pane canvas{height:340px !important;max-height:340px !important;width:100% !important}
+.placement-panel{border:1px solid var(--bd);border-radius:var(--r);background:#f8fafc;overflow:hidden}
+.placement-panel-head{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.placement-panel-title{font-weight:700;color:var(--t1);font-size:.92rem}
+.placement-panel-sub{font-size:.78rem;color:var(--tm);white-space:nowrap}
+.placement-list{display:grid;gap:0}
+.placement-row{display:grid;grid-template-columns:112px 1fr 74px 68px;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid #e5e7eb;background:#fff}
+.placement-row:last-child{border-bottom:0}
+.placement-name{font-weight:700;color:#1f2937;text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.placement-meta{font-size:.75rem;color:#64748b;margin-top:2px}
+.placement-track{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin-bottom:5px}
+.placement-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#0ea5e9,#22c55e)}
+.placement-money{font-weight:700;color:#0f172a;text-align:right;font-size:.88rem}
+.placement-roi{text-align:right;font-weight:800;font-size:.95rem}
+.placement-roi.high{color:#059669}.placement-roi.mid{color:#d97706}.placement-roi.low{color:#dc2626}
+.placement-empty{padding:28px;text-align:center;color:var(--tm);background:#fff}
 @media(max-width:768px){.chart-row,.chart-row-3,.chart-row-2{grid-template-columns:1fr}.chart-box-wide{grid-column:span 1}}
+@media(max-width:1100px){.placement-box{grid-column:span 1;grid-template-columns:1fr}.placement-row{grid-template-columns:96px 1fr 64px 58px}}
 .divider{border:none;border-top:2px solid var(--bd);margin:32px 0}
 .divider-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
 .divider-label span{font-size:1.2rem;font-weight:700;color:var(--t1);white-space:nowrap}
@@ -399,7 +418,10 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="chart-box"><canvas id="audGenderPie"></canvas></div>
 </div>
 <div class="chart-row chart-row-3">
-<div class="chart-box"><canvas id="audPlacementChart"></canvas></div>
+<div class="chart-box placement-box">
+<div class="placement-chart-pane"><canvas id="audPlacementChart"></canvas></div>
+<div class="placement-panel" id="audPlacementBoard"></div>
+</div>
 <div class="chart-box chart-box-wide" id="audSpendBox"><canvas id="audNewOldSpend"></canvas></div>
 </div>
 <div class="chart-row chart-row-2">
@@ -2366,6 +2388,59 @@ function renderAudienceOverview() {
   el.innerHTML = h;
 }
 
+function audPlatformLabel(key) {
+  var map = {
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    audience_network: 'Audience Network',
+    messenger: 'Messenger',
+    threads: 'Threads',
+    unknown: 'Unknown'
+  };
+  return map[key] || key;
+}
+
+function audRoiClass(v) {
+  return v >= 10 ? 'high' : v >= 6 ? 'mid' : 'low';
+}
+
+function renderAudiencePlacementBoard(plAgg, plKeys) {
+  var el = document.getElementById('audPlacementBoard');
+  if (!el) return;
+  if (!plKeys || plKeys.length === 0) {
+    el.innerHTML = '<div class="placement-empty">暂无版位数据</div>';
+    return;
+  }
+
+  var totalSpend = plKeys.reduce(function(sum, k) { return sum + ((plAgg[k] || {}).spend || 0); }, 0);
+  var totalSales = plKeys.reduce(function(sum, k) { return sum + ((plAgg[k] || {}).sales || 0); }, 0);
+  var totalConv = plKeys.reduce(function(sum, k) { return sum + ((plAgg[k] || {}).conversions || 0); }, 0);
+  var avgRoi = totalSpend > 0 ? totalSales / totalSpend : 0;
+
+  var h = '';
+  h += '<div class="placement-panel-head">';
+  h += '<div><div class="placement-panel-title">版位表现排行</div><div class="placement-panel-sub">总花费 ' + fmtMoney(totalSpend) + ' · 总ROI ' + avgRoi.toFixed(2) + ' · 转化 ' + fmtNum(totalConv) + '</div></div>';
+  h += '<div class="placement-panel-sub">按花费排序</div>';
+  h += '</div><div class="placement-list">';
+
+  plKeys.forEach(function(k) {
+    var d = plAgg[k] || {};
+    var spend = d.spend || 0;
+    var share = totalSpend > 0 ? spend / totalSpend * 100 : 0;
+    var roi = d.roi || 0;
+    var cpa = d.cpa || 0;
+    h += '<div class="placement-row">';
+    h += '<div><div class="placement-name">' + esc(audPlatformLabel(k)) + '</div><div class="placement-meta">' + share.toFixed(1) + '% 花费占比</div></div>';
+    h += '<div><div class="placement-track"><div class="placement-fill" style="width:' + Math.max(2, share).toFixed(1) + '%"></div></div><div class="placement-meta">销售 ' + fmtMoney(d.sales || 0) + ' · 转化 ' + fmtNum(d.conversions || 0) + ' · CPA ' + fmtMoney(cpa) + '</div></div>';
+    h += '<div class="placement-money">' + fmtMoney(spend) + '</div>';
+    h += '<div class="placement-roi ' + audRoiClass(roi) + '">' + roi.toFixed(2) + 'x</div>';
+    h += '</div>';
+  });
+
+  h += '</div>';
+  el.innerHTML = h;
+}
+
 function renderAudienceCharts() {
   if (!AUDIENCE_DATA) return;
   
@@ -2421,20 +2496,23 @@ function renderAudienceCharts() {
   if (plCtx) {
     if (window.audPlacementInst) window.audPlacementInst.destroy();
     var plKeys = Object.keys(plAgg).sort(function(a,b){return plAgg[b].spend - plAgg[a].spend;});
+    renderAudiencePlacementBoard(plAgg, plKeys);
     if (plKeys.length === 0) plKeys = ['暂无数据'];
     var plSpend = plKeys.map(function(k) { return Math.round((plAgg[k]||{}).spend||0); });
     var plROI = plKeys.map(function(k) { return (plAgg[k]||{}).roi||0; });
     var plTotal = plSpend.reduce(function(a,b){return a+b;},0);
-    var plColors = plKeys.map(function(_,i){var t=i/(plKeys.length-1||1);return 'hsl('+(160+t*60)+',65%,'+(45+t*15)+'%)';});
-    window.audPlacementInst = new Chart(plCtx,{type:'bar',data:{labels:plKeys,datasets:[
-      {label:'花费',data:plSpend,backgroundColor:plColors,borderRadius:8,barPercentage:.7,yAxisID:'y'},
-      {label:'ROI',data:plROI,type:'line',borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',tension:.4,fill:true,
-       pointRadius:5,pointBackgroundColor:'#f59e0b',pointBorderColor:'#fff',pointBorderWidth:2,yAxisID:'y1'}
+    var plColors = plKeys.map(function(k){var roi=(plAgg[k]||{}).roi||0;return roi>=10?'#10b981':roi>=6?'#f59e0b':'#ef4444';});
+    var plLabels = plKeys.map(audPlatformLabel);
+    window.audPlacementInst = new Chart(plCtx,{type:'bar',data:{labels:plLabels,datasets:[
+      {label:'花费',data:plSpend,backgroundColor:plColors,borderRadius:8,barPercentage:.62,yAxisID:'y'},
+      {label:'ROI',data:plROI,type:'line',borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',tension:.35,fill:false,
+       pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:'#2563eb',pointBorderWidth:2,yAxisID:'y1'}
     ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',interaction:{intersect:false,mode:'index'},
-      plugins:{title:{display:true,text:'\uD83D\uDCEF 版位 花费 & ROI',font:{size:14,weight:'700'},color:'#334155',padding:12},
+      plugins:{legend:{position:'top',align:'end',labels:{usePointStyle:true,boxWidth:8,padding:14}},
+        title:{display:true,text:'版位 花费 & ROI',font:{size:15,weight:'700'},color:'#334155',padding:{top:4,bottom:14}},
         tooltip:{padding:12,backgroundColor:'rgba(15,23,42,.92)',callbacks:{label:function(c){return c.dataset.yAxisID==='y1'?'ROI: '+c.raw.toFixed(2)+'x':'花费: $'+c.raw.toLocaleString()+' ('+(plTotal>0?(c.raw/plTotal*100).toFixed(1):0)+'%)';}}}},
-      scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:11}}},
-        x:{beginAtZero:true,grid:{color:'#f1f5f9'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
+      scales:{y:{grid:{display:false},border:{display:false},ticks:{font:{size:12,weight:'600'},color:'#334155'}},
+        x:{beginAtZero:true,grid:{color:'#edf2f7'},border:{display:false},position:'top',ticks:{callback:function(v){return '$'+v.toLocaleString()}}},
         y1:{beginAtZero:true,position:'bottom',grid:{drawOnChartArea:false},border:{display:false},ticks:{callback:function(v){return v.toFixed(1)+'x'}}}}}});
   }
   

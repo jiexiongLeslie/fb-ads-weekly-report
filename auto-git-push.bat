@@ -1,25 +1,24 @@
 @echo off
 chcp 65001 >nul
+cd /d "%~dp0"
 
-:: 自动Git上传脚本（静默模式，无窗口等待）
-:: 获取当前日期时间作为提交信息
-for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)
-for /f "tokens=1-2 delims=: " %%a in ('time /t') do (set mytime=%%a:%%b)
-set commit_msg=Auto update %mydate% %mytime%
-
-:: 检查Git是否可用
 where git >nul 2>nul
-if %errorlevel% neq 0 exit /b 1
+if errorlevel 1 exit /b 1
 
-:: 添加文件
-git add . >nul 2>&1
+for /f "tokens=*" %%b in ('git branch --show-current') do set BRANCH=%%b
+if "%BRANCH%"=="" set BRANCH=main
 
-:: 检查是否有变更
+for /f "tokens=1-3 delims=/ " %%a in ('date /t') do set TODAY=%%a-%%b-%%c
+for /f "tokens=1-2 delims=: " %%a in ('time /t') do set NOW=%%a:%%b
+set COMMIT_MSG=Auto update %TODAY% %NOW%
+
+git add -A -- . ":(exclude)user_config.json" >nul 2>&1
 git diff --cached --quiet
-if %errorlevel% equ 0 exit /b 0
-
-:: 提交并推送
-git commit -m "%commit_msg%" >nul 2>&1
-git push origin main >nul 2>&1
+if errorlevel 1 (
+    git commit -m "%COMMIT_MSG%" >nul 2>&1
+    if errorlevel 1 exit /b 1
+    git push -u origin "%BRANCH%" >nul 2>&1
+    if errorlevel 1 exit /b 1
+)
 
 exit /b 0

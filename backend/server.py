@@ -12,11 +12,26 @@ import os
 import time
 
 # ============ 配置 ============
+def read_env(name, default=''):
+    value = os.getenv(name)
+    if value:
+        return value
+    if os.name == 'nt':
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment') as key:
+                return winreg.QueryValueEx(key, name)[0] or default
+        except OSError:
+            pass
+    return default
+
+PORT = int(read_env('FB_REPORT_PORT', os.getenv('PORT', '5003')))
+
 CONFIG = {
-    'app_id': '2254877108592549',
-    'app_secret': '839af6971edde077451a3e034a399d75',
-    'access_token': 'EAAgCzH0R36UBRUo0uATK7ZC4ARTaqZCwIp46q0k3AzB5CWkKUfHVhUxPhQ3gR219QVvOsRR7p3biodZAZCjCIMML8MRBTuyK8xaPduJJTbetQ6PoKZBuUxuLELgF6in0sPdY2SAxVU2X1iLMzOZBVbl8Pgu5d2eMetDtOzPVF5VzCPRuCl9ZCkfOOZBodli5eQZDZD',
-    'business_id': '303627654972252',
+    'app_id': read_env('FB_APP_ID', '2254877108592549'),
+    'app_secret': read_env('FB_APP_SECRET'),
+    'access_token': read_env('FB_ACCESS_TOKEN'),
+    'business_id': read_env('FB_BUSINESS_ID', '303627654972252'),
     'ad_accounts': {
         '英国站': {'id': '1450908062157108', 'page': 'SUNLU UK'},
         '法国站': {'id': '1263004614711858', 'page': 'SUNLU FR'},
@@ -98,6 +113,15 @@ def date_range_days(since, until):
 # ============ 统一Flask应用 (端口5003) ============
 app = Flask(__name__)
 CORS(app)
+
+def facebook_config_error():
+    missing = [name for name, key in (
+        ('FB_APP_SECRET', 'app_secret'),
+        ('FB_ACCESS_TOKEN', 'access_token')
+    ) if not CONFIG.get(key)]
+    if missing:
+        return 'Missing Facebook config: ' + ', '.join(missing)
+    return ''
 
 def get_campaigns_insights(account_id, start_date, end_date, access_token):
     """获取广告系列级别成效数据（支持分页）"""
@@ -373,6 +397,10 @@ def sync_data():
     if not start_date or not end_date:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
+    config_error = facebook_config_error()
+    if config_error:
+        return jsonify({'success': False, 'message': config_error}), 500
+
     access_token = CONFIG['access_token']
     traffic_keywords = ['流量', 'traffic', 'trafic', '曝光', 'reach']
     
@@ -770,6 +798,10 @@ def fetch_audience():
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
+    config_error = facebook_config_error()
+    if config_error:
+        return jsonify({'success': False, 'message': config_error}), 500
+
     ensure_cache_dir()
     access_token = CONFIG['access_token']
     days = date_range_days(since, until)
@@ -892,6 +924,10 @@ def fetch_customer_type():
     if not since or not until:
         return jsonify({'success': False, 'message': '请提供 start_date 和 end_date'})
     
+    config_error = facebook_config_error()
+    if config_error:
+        return jsonify({'success': False, 'message': config_error}), 500
+
     ensure_cache_dir()
     access_token = CONFIG['access_token']
     days = date_range_days(since, until)
@@ -999,6 +1035,10 @@ def get_accounts():
 @app.route('/api/token-status', methods=['GET'])
 def token_status():
     """检查 Token 状态"""
+    config_error = facebook_config_error()
+    if config_error:
+        return jsonify({'success': False, 'error': config_error}), 500
+
     url = 'https://graph.facebook.com/debug_token'
     params = {
         'input_token': CONFIG['access_token'],
@@ -1047,4 +1087,4 @@ if __name__ == '__main__':
     print()
     print('  按 Ctrl+C 停止服务')
     print('=' * 50)
-    app.run(host='0.0.0.0', port=5003, debug=False)
+    app.run(host='0.0.0.0', port=PORT, debug=False)

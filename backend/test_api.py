@@ -1,27 +1,37 @@
-import requests
 import json
+from datetime import date, timedelta
 
-BASE_URL = 'http://localhost:5000'
+import requests
 
-print('=== 测试 API 连接 ===')
 
-# 测试 Token 状态
-print('\n1. 检查 Token 状态...')
-resp = requests.get(f'{BASE_URL}/api/token-status')
-print(f'状态: {resp.status_code}')
-print(json.dumps(resp.json(), indent=2, ensure_ascii=False))
+BASE_URL = 'http://localhost:5003'
 
-# 测试同步
-print('\n2. 测试数据同步...')
-resp = requests.post(f'{BASE_URL}/api/sync', json={'days': 7})
-print(f'状态: {resp.status_code}')
-data = resp.json()
-if data.get('success'):
-    print('同步成功！')
-    print(f"总花费: ${data['data']['summary']['total_spend']:,.2f}")
-    print(f"总销售额: ${data['data']['summary']['total_sales']:,.2f}")
-    print(f"平均 ROI: {data['data']['summary']['avg_roi']:.2f}")
-else:
-    print('同步失败:', data.get('message'))
 
-print('\n=== 测试完成 ===')
+def print_response(title, response):
+    print(f'\n{title}')
+    print(f'Status: {response.status_code}')
+    try:
+        print(json.dumps(response.json(), indent=2, ensure_ascii=False))
+    except ValueError:
+        print(response.text)
+
+
+print('=== API smoke test ===')
+
+token_resp = requests.get(f'{BASE_URL}/api/token-status', timeout=20)
+print_response('1. Token status', token_resp)
+
+end_date = date.today()
+start_date = end_date - timedelta(days=7)
+sync_resp = requests.post(
+    f'{BASE_URL}/api/sync',
+    json={
+        'start_date': start_date.isoformat(),
+        'end_date': end_date.isoformat(),
+        'force_refresh_days': 0,
+    },
+    timeout=300,
+)
+print_response('2. Sync last 7 days', sync_resp)
+
+print('\n=== Done ===')

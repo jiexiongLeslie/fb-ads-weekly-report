@@ -6,3 +6,6 @@ fb_conversion_campaigns.json
 fb_audience_cache/
 user_config.json
 .uploads/
+logs/
+.env
+fb_credentials.json
