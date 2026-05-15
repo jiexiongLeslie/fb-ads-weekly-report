@@ -2890,12 +2890,23 @@ function getChartData(metric) {
     // 从产品分类数据获取（通过广告系列名称匹配）
     var prodData = getProductDataFromSync(prod, S.filters.chart.start, S.filters.chart.end);
     countries.forEach(function(c) {
-      var total = 0;
-      var count = 0;
+      var total = {spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0};
       prodData.forEach(function(r) {
-        if (r.country === c) { total += r[metric] || 0; count++; }
+        if (r.country === c) {
+          total.spend += parseFloat(r.spend) || 0;
+          total.sales += parseFloat(r.sales) || 0;
+          total.conversions += parseFloat(r.conversions) || 0;
+          total.clicks += parseFloat(r.clicks) || 0;
+          total.impressions += parseFloat(r.impressions) || 0;
+        }
       });
-      data.push(count > 0 ? (metric === 'roi' ? total / count : total) : 0);
+      var value = 0;
+      if (metric === 'roi') value = total.spend > 0 ? total.sales / total.spend : 0;
+      else if (metric === 'cpa') value = total.conversions > 0 ? total.spend / total.conversions : 0;
+      else if (metric === 'ctr') value = total.impressions > 0 ? total.clicks / total.impressions * 100 : 0;
+      else if (metric === 'cvr') value = total.clicks > 0 ? total.conversions / total.clicks * 100 : 0;
+      else value = total[metric] || 0;
+      data.push(Math.round(value * 100) / 100);
     });
   }
   return {labels: labels, data: data};
