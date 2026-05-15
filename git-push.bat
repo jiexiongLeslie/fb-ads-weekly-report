@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ==========================================
-echo    FB广告周报系统 - Git自动上传工具
+echo    Datenanalyse-Dashboard - Git自动上传工具
 echo ==========================================
 echo.
 

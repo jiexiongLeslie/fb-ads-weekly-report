@@ -1,5 +1,5 @@
 """
-Facebook Ads 周报系统 - 统一服务器
+Datenanalyse-Dashboard - 统一服务器
 前端: http://localhost:5003
 后端API: http://localhost:5003/api/*
 """
@@ -1091,7 +1091,7 @@ def serve_file(filename):
 
 if __name__ == '__main__':
     print('=' * 50)
-    print('  Facebook Ads 周报系统')
+    print('  Datenanalyse-Dashboard')
     print('=' * 50)
     print()
     print('  访问地址: http://localhost:5003')

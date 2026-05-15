@@ -1,6 +1,6 @@
-# Facebook Ads Weekly Report
+# Datenanalyse-Dashboard
 
-Local Flask app for syncing Facebook Ads data and viewing the weekly report.
+Local Flask app for syncing Facebook Ads data and viewing the analytics dashboard.
 
 ## Structure
 
@@ -34,9 +34,9 @@ http://localhost:5003
 
 ## Auto Start
 
-Run `install-auto-start.bat` once. It creates a Windows Scheduled Task named
-`FB Ads Weekly Report`, starts the service on user logon, and launches it once
-immediately.
+Run `install-auto-start.bat` once. It creates Windows Scheduled Tasks named
+`Datenanalyse-Dashboard` and `Datenanalyse-Dashboard Watchdog`, starts the
+service on user logon, and checks every 5 minutes that it is still running.
 
 Logs are written to `logs/server.log`.
 
