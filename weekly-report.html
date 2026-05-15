@@ -11,22 +11,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root{--sb:#1a1f36;--sb-h:#252b45;--sb-a:#2d3456;--sb-t:#a0aec0;--sb-ta:#fff;--sb-w:240px;--bg:#f7f8fc;--card:#fff;--acc:#f59e0b;--acc-l:#fef3c7;--acc-d:#d97706;--t1:#1a202c;--t2:#4a5568;--tm:#a0aec0;--bd:#e2e8f0;--ok:#10b981;--ok-bg:#d1fae5;--warn:#f59e0b;--warn-bg:#fef3c7;--err:#ef4444;--err-bg:#fee2e2;--sh:0 1px 3px rgba(0,0,0,.08);--r:6px;--tr:all .25s ease}
+:root{--sb:#10162b;--sb-h:rgba(255,255,255,.07);--sb-a:rgba(255,255,255,.12);--sb-t:#9aa7bd;--sb-ta:#fff;--sb-w:260px;--bg:#f7f8fc;--card:#fff;--acc:#f59e0b;--acc-l:#fef3c7;--acc-d:#d97706;--t1:#1a202c;--t2:#4a5568;--tm:#a0aec0;--bd:#e2e8f0;--ok:#10b981;--ok-bg:#d1fae5;--warn:#f59e0b;--warn-bg:#fef3c7;--err:#ef4444;--err-bg:#fee2e2;--sh:0 1px 3px rgba(0,0,0,.08);--r:6px;--tr:all .25s ease}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:14px}
 body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}
 .app{display:flex;min-height:100vh}
-.sidebar{width:var(--sb-w);background:var(--sb);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sb-hd{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
-.logo{font-size:1.1rem;font-weight:700;color:var(--sb-ta);display:flex;align-items:center;gap:10px}
-.logo-i{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--acc-d));border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1rem}
-.nav{flex:1;padding:16px 0;overflow-y:auto}
-.nav-t{color:var(--sb-t);font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;padding:12px 20px 6px;font-weight:500}
-.nl{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--sb-t);text-decoration:none;font-size:.88rem;transition:var(--tr);border-left:3px solid transparent;cursor:pointer}
-.nl:hover{background:var(--sb-h);color:var(--sb-ta)}
-.nl.active{background:var(--sb-a);color:var(--sb-ta);border-left-color:var(--acc)}
-.nl .ni{width:20px;text-align:center;flex-shrink:0}
-.sb-ft{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);color:var(--sb-t);font-size:.75rem;display:flex;align-items:center;gap:6px}
+.sidebar{width:var(--sb-w);background:radial-gradient(circle at 18% 0%,rgba(56,189,248,.18),transparent 28%),linear-gradient(180deg,#111a33 0%,#12182d 48%,#0c1224 100%);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100;overflow-y:auto;box-shadow:inset -1px 0 0 rgba(255,255,255,.06),12px 0 28px rgba(15,23,42,.12)}
+.sidebar::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.035),transparent 32%),repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 6px);opacity:.55}
+.sb-hd{position:relative;padding:26px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo{font-size:1.02rem;font-weight:800;color:var(--sb-ta);display:flex;align-items:center;gap:12px;letter-spacing:.2px}
+.logo-i{width:36px;height:36px;background:#38bdf8;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0;box-shadow:0 10px 24px rgba(56,189,248,.28)}
+.logo-i::before{content:'';width:15px;height:15px;border-radius:4px;background:#fff;box-shadow:7px 7px 0 rgba(255,255,255,.55)}
+.nav{position:relative;flex:1;padding:18px 12px;overflow-y:auto}
+.nav-t{color:#71809b;font-size:.68rem;text-transform:uppercase;letter-spacing:1.8px;padding:8px 10px 10px;font-weight:800}
+.nl{position:relative;display:flex;align-items:center;gap:12px;padding:12px 12px;color:var(--sb-t);text-decoration:none;font-size:.9rem;font-weight:600;transition:var(--tr);border-radius:10px;cursor:pointer;margin:3px 0}
+.nl:hover{background:var(--sb-h);color:#eef6ff;transform:translateX(2px)}
+.nl.active{background:linear-gradient(90deg,rgba(245,158,11,.22),rgba(255,255,255,.1));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 12px 22px rgba(0,0,0,.12)}
+.nl.active::before{content:'';position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:4px;background:var(--acc)}
+.nl .ni{width:18px;height:18px;border-radius:5px;flex-shrink:0;background:var(--nav-c,#38bdf8);box-shadow:0 8px 16px color-mix(in srgb,var(--nav-c,#38bdf8) 28%,transparent)}
+.nl .ni::before{content:'';display:block;width:7px;height:7px;border-radius:2px;background:rgba(255,255,255,.85);margin:5.5px auto}
+.nl:nth-child(2){--nav-c:#38bdf8}.nl:nth-child(3){--nav-c:#f97316}.nl:nth-child(4){--nav-c:#c084fc}.nl:nth-child(5){--nav-c:#facc15}.nl:nth-child(6){--nav-c:#60a5fa}.nl:nth-child(7){--nav-c:#22c55e}.nl:nth-child(8){--nav-c:#a78bfa}
+.sb-ft{position:relative;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);color:var(--sb-t);font-size:.75rem;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.1)}
 .sd{width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block}
 .mc{margin-left:var(--sb-w);flex:1;min-height:100vh}
 .tb{background:var(--card);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;box-shadow:var(--sh)}
@@ -40,7 +45,8 @@ body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;back
 .btn-s{background:var(--bg);color:var(--t2);border:1px solid var(--bd)}.btn-s:hover{background:var(--bd)}
 .btn-sm{padding:6px 12px;font-size:.8rem}
 .ca{padding:24px 32px}
-.sec{background:var(--card);border-radius:10px;margin-bottom:24px;box-shadow:var(--sh);overflow:hidden}
+.sec{display:none;background:var(--card);border-radius:10px;margin-bottom:24px;box-shadow:var(--sh);overflow:hidden}
+.sec.active-section{display:block}
 .sh{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--bd)}
 .sh:hover{background:rgba(0,0,0,.01)}
 .sh-l{display:flex;align-items:center;gap:8px}
@@ -196,14 +202,14 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="sidebar">
 <div class="sb-hd"><div class="logo"><div class="logo-i">&#128202;</div><span>Datenanalyse-Dashboard</span></div></div>
 <div class="nav">
-<div class="nav-t">数据分析</div>
-<div class="nl active" onclick="go('sec-sync')"><span class="ni">&#128260;</span><span>1. 同步数据概览</span></div>
-<div class="nl" onclick="go('sec-weekly')"><span class="ni">&#128197;</span><span>2. 站点数据对比</span></div>
-<div class="nl" onclick="go('sec-product')"><span class="ni">&#128230;</span><span>3. 产品投放明细</span></div>
-<div class="nl" onclick="go('sec-budget')"><span class="ni">&#128176;</span><span>4. 预算对比</span></div>
-<div class="nl" onclick="go('sec-productcmp')"><span class="ni">&#128270;</span><span>5. 产品对比</span></div>
-<div class="nl" onclick="go('sec-charts')"><span class="ni">&#128202;</span><span>6. 站点对比看板</span></div>
-<div class="nl" onclick="go('sec-audience')"><span class="ni">&#128101;</span><span>7. 受众分析</span></div>
+<div class="nav-t">&#25968;&#25454;&#20998;&#26512;</div>
+<div class="nl active" onclick="go('sec-sync')"><span class="ni"></span><span>1. &#21516;&#27493;&#25968;&#25454;&#27010;&#35272;</span></div>
+<div class="nl" onclick="go('sec-weekly')"><span class="ni"></span><span>2. &#31449;&#28857;&#25968;&#25454;&#23545;&#27604;</span></div>
+<div class="nl" onclick="go('sec-product')"><span class="ni"></span><span>3. &#20135;&#21697;&#25237;&#25918;&#26126;&#32454;</span></div>
+<div class="nl" onclick="go('sec-budget')"><span class="ni"></span><span>4. &#39044;&#31639;&#23545;&#27604;</span></div>
+<div class="nl" onclick="go('sec-productcmp')"><span class="ni"></span><span>5. &#20135;&#21697;&#23545;&#27604;</span></div>
+<div class="nl" onclick="go('sec-charts')"><span class="ni"></span><span>6. &#31449;&#28857;&#23545;&#27604;&#30475;&#26495;</span></div>
+<div class="nl" onclick="go('sec-audience')"><span class="ni"></span><span>7. &#21463;&#20247;&#20998;&#26512;</span></div>
 </div>
 <div class="sb-ft"><span class="sd"></span><span>数据已自动保存</span></div>
 </div>
@@ -220,7 +226,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div id="syncArea"></div>
 
 <!-- ========== FB同步数据概览 ========== -->
-<div class="sec" id="sec-sync">
+<div class="sec active-section" id="sec-sync">
 <div class="sh" onclick="tog('sec-sync')"><div class="sh-l"><span class="si">&#128260;</span><span class="st">FB同步数据概览</span></div><span class="stg" id="tg-sec-sync">&#9660;</span></div>
 <div class="sbd" id="bd-sec-sync">
 <div class="filter-bar">
@@ -619,9 +625,26 @@ function tog(id) {
   }
 }
 
+function renderActiveModule(id) {
+  if (id === 'sec-sync') renderModule7();
+  else if (id === 'sec-weekly') renderWeeklyModule();
+  else if (id === 'sec-product') renderProductModule();
+  else if (id === 'sec-budget') renderBudgetModule();
+  else if (id === 'sec-productcmp') renderPcmpModule();
+  else if (id === 'sec-charts') renderChartModule();
+  else if (id === 'sec-audience') {
+    renderAudienceTabs();
+    if (AUDIENCE_DATA) renderAudienceModule();
+  }
+}
+
 function go(id) {
   var el = document.getElementById(id);
   if (el) {
+    document.querySelectorAll('.sec').forEach(function(sec) {
+      sec.classList.remove('active-section');
+    });
+    el.classList.add('active-section');
     var bd = document.getElementById('bd-' + id);
     var tg = document.getElementById('tg-' + id);
     if (bd && bd.classList.contains('hide')) {
@@ -631,8 +654,9 @@ function go(id) {
     el.scrollIntoView({behavior:'smooth'});
     // 更新导航激活状态
     document.querySelectorAll('.nl').forEach(function(nl) { nl.classList.remove('active'); });
-    var nl = document.querySelector('.nl[onclick*="' + id + '"');
+    var nl = document.querySelector('.nl[onclick*="' + id + '"]');
     if (nl) nl.classList.add('active');
+    setTimeout(function() { renderActiveModule(id); }, 0);
   }
 }
 
