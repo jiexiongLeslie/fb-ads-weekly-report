@@ -120,6 +120,20 @@ textarea{resize:vertical;min-height:60px}
 .overview-card .ov-label{font-size:.85rem;opacity:.9;margin-bottom:4px}
 .overview-card .ov-value{font-size:1.8rem;font-weight:700}
 .overview-card .ov-delta{font-size:.85rem;margin-top:4px;opacity:.9}
+.balance-board{margin-bottom:24px;border:1px solid var(--bd);border-radius:10px;background:#fff;box-shadow:var(--sh);overflow:hidden}
+.balance-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bd);background:#f8fafc}
+.balance-title{font-size:1rem;font-weight:800;color:var(--t1)}
+.balance-meta{font-size:.78rem;color:var(--tm)}
+.balance-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:16px}
+.balance-card{border:1px solid #e5e7eb;border-radius:8px;padding:14px;background:linear-gradient(180deg,#fff,#f8fafc)}
+.balance-card.low{border-color:#fecaca;background:linear-gradient(180deg,#fff7f7,#fff)}
+.balance-card.error{border-color:#fed7aa;background:#fff7ed}
+.balance-card h4{font-size:.95rem;margin-bottom:6px;color:#111827}
+.balance-main{font-size:1.65rem;font-weight:800;color:#111827;line-height:1.2}
+.balance-card.low .balance-main{color:#dc2626}
+.balance-sub{font-size:.78rem;color:#64748b;margin-top:8px;display:grid;gap:3px}
+.balance-pill{display:inline-flex;align-items:center;gap:5px;width:max-content;padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:700;background:#dcfce7;color:#166534;margin-top:8px}
+.balance-pill.warn{background:#fee2e2;color:#991b1b}
 .sync-charts{margin-bottom:24px}
 .weekly-charts{margin-bottom:24px}
 .product-charts{margin-bottom:24px}
@@ -244,6 +258,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 </div>
 <!-- 总体概览卡片 -->
 <div id="syncOverview" class="overview-cards"></div>
+<div id="accountBalanceBoard" class="balance-board"></div>
 <!-- 站点对比图表 -->
 <div class="sync-charts">
 <div class="chart-row">
@@ -488,6 +503,14 @@ var S = {
 
 // 产品投放数据模板
 // 重点产品分类配置（名称 -> 匹配关键词）
+var ACCOUNT_BALANCE_STATE = {
+  data: [],
+  updatedAt: '',
+  threshold: 100,
+  alerted: {}
+};
+var ACCOUNT_BALANCE_TIMER = null;
+
 var PRODUCT_CATEGORIES = {
   '电子系列': ['电子', 'electronics', 'electronic'],
   'AMS Heater': ['heater', '加热器', 'ams heater'],
@@ -610,6 +633,107 @@ function toast(msg, type) {
   t.innerHTML = '<span>' + (icons[type]||'') + '</span><span>' + msg + '</span>';
   c.appendChild(t);
   setTimeout(function() { if (t.parentNode) t.remove(); }, 3000);
+}
+
+function fmtAccountMoney(v, currency) {
+  if (v === null || v === undefined || v === '') return '--';
+  return (currency ? currency + ' ' : '') + Number(v || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function renderAccountBalanceBoard() {
+  var el = document.getElementById('accountBalanceBoard');
+  if (!el) return;
+  var accounts = ACCOUNT_BALANCE_STATE.data || [];
+  var updated = ACCOUNT_BALANCE_STATE.updatedAt ? new Date(ACCOUNT_BALANCE_STATE.updatedAt).toLocaleString('zh-CN') : '尚未更新';
+  var h = '<div class="balance-head"><div><div class="balance-title">广告账户可用余额</div><div class="balance-meta">每 30 分钟自动更新，低于 ' + ACCOUNT_BALANCE_STATE.threshold + ' 自动预警</div></div><div class="balance-meta">更新时间：' + updated + '</div></div>';
+  if (!accounts.length) {
+    h += '<div class="balance-grid"><div class="balance-card"><h4>余额状态</h4><div class="balance-main">--</div><div class="balance-sub"><span>正在等待账户余额数据</span></div></div></div>';
+    el.innerHTML = h;
+    return;
+  }
+  h += '<div class="balance-grid">';
+  accounts.forEach(function(a) {
+    var currency = a.currency || '';
+    var balanceValue = a.available_balance !== undefined && a.available_balance !== null ? a.available_balance : a.balance;
+    var low = a.success && balanceValue !== null && balanceValue !== undefined && Number(balanceValue) < ACCOUNT_BALANCE_STATE.threshold;
+    var cls = a.success ? (low ? ' low' : '') : ' error';
+    h += '<div class="balance-card' + cls + '">';
+    h += '<h4>' + esc(a.site_name || a.name || a.account_id) + '</h4>';
+    if (!a.success) {
+      h += '<div class="balance-main">读取失败</div><div class="balance-sub"><span>' + esc(a.error || '未知错误') + '</span></div>';
+    } else {
+      h += '<div class="balance-main">' + fmtAccountMoney(balanceValue, currency) + '</div>';
+      h += '<span class="balance-pill' + (low ? ' warn' : '') + '">' + (low ? '余额预警' : '余额正常') + '</span>';
+      h += '<div class="balance-sub">';
+      h += '<span>账户：' + esc(a.name || a.account_id) + '</span>';
+      h += '<span>账务余额：' + fmtAccountMoney(a.balance, currency) + '</span>';
+      h += '<span>累计花费：' + fmtAccountMoney(a.amount_spent, currency) + '</span>';
+      h += '<span>花费上限：' + fmtAccountMoney(a.spend_cap, currency) + '</span>';
+      h += '<span>上限剩余：' + fmtAccountMoney(a.remaining_cap, currency) + '</span>';
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function showBalanceAlert(lows) {
+  if (!lows.length) return;
+  var old = document.getElementById('balanceAlertMo');
+  if (old) old.remove();
+  var m = document.createElement('div');
+  m.id = 'balanceAlertMo';
+  m.className = 'mo';
+  var list = lows.map(function(a) {
+    var balanceValue = a.available_balance !== undefined && a.available_balance !== null ? a.available_balance : a.balance;
+    return '<li><strong>' + esc(a.site_name || a.name || a.account_id) + '</strong>：' + fmtAccountMoney(balanceValue, a.currency || '') + '</li>';
+  }).join('');
+  m.innerHTML = '<div class="mo-c" style="max-width:520px"><div class="mo-h"><h3>&#9888; 广告账户余额预警</h3><button class="mo-x" onclick="closeBalanceAlert()">&times;</button></div>'
+    + '<div style="padding:18px 20px"><p style="margin-bottom:12px;color:#4b5563">以下广告账户余额低于 ' + ACCOUNT_BALANCE_STATE.threshold + '，请及时充值：</p><ul style="padding-left:20px;line-height:1.9">' + list + '</ul></div>'
+    + '<div class="mo-f"><button class="btn btn-p" onclick="closeBalanceAlert()">我知道了</button></div></div>';
+  document.body.appendChild(m);
+}
+
+function closeBalanceAlert() {
+  var m = document.getElementById('balanceAlertMo');
+  if (m) m.remove();
+}
+
+function checkBalanceAlerts(accounts) {
+  var lows = [];
+  (accounts || []).forEach(function(a) {
+    var key = a.account_id || a.site_name;
+    var balanceValue = a.available_balance !== undefined && a.available_balance !== null ? a.available_balance : a.balance;
+    var isLow = a.success && balanceValue !== null && balanceValue !== undefined && Number(balanceValue) < ACCOUNT_BALANCE_STATE.threshold;
+    if (isLow && !ACCOUNT_BALANCE_STATE.alerted[key]) {
+      lows.push(a);
+      ACCOUNT_BALANCE_STATE.alerted[key] = true;
+    } else if (!isLow) {
+      ACCOUNT_BALANCE_STATE.alerted[key] = false;
+    }
+  });
+  showBalanceAlert(lows);
+}
+
+function fetchAccountBalances(silent) {
+  return fetch('/api/account-balances').then(function(r) { return r.json(); }).then(function(result) {
+    if (!result.success) throw new Error(result.error || '账户余额获取失败');
+    ACCOUNT_BALANCE_STATE.data = result.accounts || [];
+    ACCOUNT_BALANCE_STATE.updatedAt = result.updated_at || new Date().toISOString();
+    ACCOUNT_BALANCE_STATE.threshold = result.threshold || 100;
+    renderAccountBalanceBoard();
+    checkBalanceAlerts(ACCOUNT_BALANCE_STATE.data);
+  }).catch(function(e) {
+    if (!silent) toast('账户余额获取失败: ' + e.message, 'err');
+    renderAccountBalanceBoard();
+  });
+}
+
+function startAccountBalanceAutoRefresh() {
+  fetchAccountBalances(true);
+  if (ACCOUNT_BALANCE_TIMER) clearInterval(ACCOUNT_BALANCE_TIMER);
+  ACCOUNT_BALANCE_TIMER = setInterval(function() { fetchAccountBalances(true); }, 30 * 60 * 1000);
 }
 
 /* ==================== 导航与折叠 ==================== */
@@ -3194,6 +3318,7 @@ function reloadAfterSync(sd, ed) {
     });
     save();
     renderAll();
+    startAccountBalanceAutoRefresh();
   });
 }
 
@@ -3408,6 +3533,7 @@ function clearAll() {
 
 /* ==================== 渲染全部 ==================== */
 function renderAll() {
+  renderAccountBalanceBoard();
   renderModule7();
   renderWeeklyModule();
   renderProductModule();
@@ -3463,6 +3589,7 @@ loadConfig(function() {
     setDateInput('audEnd', S.filters.audience && S.filters.audience.end);
     
     renderAll();
+    startAccountBalanceAutoRefresh();
     
     // 加载缓存的受众数据
     loadAudienceCache();

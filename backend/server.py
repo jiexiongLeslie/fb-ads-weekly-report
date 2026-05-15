@@ -1049,6 +1049,93 @@ def get_accounts():
         accounts.append({'name': name, 'id': info['id'], 'page': info['page']})
     return jsonify({'success': True, 'accounts': accounts})
 
+def parse_fb_money(value):
+    """Meta ad account money fields are usually returned as minor units."""
+    if value in (None, ''):
+        return None
+    try:
+        text = str(value)
+        if '.' in text:
+            return round(float(text), 2)
+        return round(float(text) / 100, 2)
+    except (TypeError, ValueError):
+        return None
+
+@app.route('/api/account-balances', methods=['GET'])
+def get_account_balances():
+    """Fetch current ad account balance fields from Meta."""
+    config_error = facebook_config_error()
+    if config_error:
+        return jsonify({'success': False, 'error': config_error}), 500
+
+    accounts = []
+    for site_name, info in CONFIG['ad_accounts'].items():
+        account_id = info['id']
+        url = f'https://graph.facebook.com/v22.0/act_{account_id}'
+        params = {
+            'access_token': CONFIG['access_token'],
+            'fields': 'name,currency,balance,amount_spent,spend_cap,account_status,disable_reason'
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=30)
+            data = resp.json()
+        except Exception as e:
+            accounts.append({
+                'site_name': site_name,
+                'account_id': account_id,
+                'page': info.get('page', ''),
+                'success': False,
+                'error': str(e)
+            })
+            continue
+
+        if 'error' in data:
+            accounts.append({
+                'site_name': site_name,
+                'account_id': account_id,
+                'page': info.get('page', ''),
+                'success': False,
+                'error': data['error'].get('message', 'Unknown error')
+            })
+            continue
+
+        balance = parse_fb_money(data.get('balance'))
+        amount_spent = parse_fb_money(data.get('amount_spent'))
+        spend_cap = parse_fb_money(data.get('spend_cap'))
+        remaining_cap = None
+        if spend_cap is not None and spend_cap > 0 and amount_spent is not None:
+            remaining_cap = round(max(spend_cap - amount_spent, 0), 2)
+        alert_balance = remaining_cap if remaining_cap is not None else balance
+
+        accounts.append({
+            'site_name': site_name,
+            'account_id': account_id,
+            'page': info.get('page', ''),
+            'success': True,
+            'name': data.get('name', site_name),
+            'currency': data.get('currency', ''),
+            'balance': balance,
+            'available_balance': alert_balance,
+            'available_balance_source': 'spend_cap_remaining' if remaining_cap is not None else 'balance',
+            'amount_spent': amount_spent,
+            'spend_cap': spend_cap,
+            'remaining_cap': remaining_cap,
+            'account_status': data.get('account_status'),
+            'disable_reason': data.get('disable_reason'),
+            'raw': {
+                'balance': data.get('balance'),
+                'amount_spent': data.get('amount_spent'),
+                'spend_cap': data.get('spend_cap')
+            }
+        })
+
+    return jsonify({
+        'success': True,
+        'threshold': 100,
+        'updated_at': datetime.now().isoformat(),
+        'accounts': accounts
+    })
+
 @app.route('/api/token-status', methods=['GET'])
 def token_status():
     """检查 Token 状态"""
@@ -1100,6 +1187,7 @@ if __name__ == '__main__':
     print('    POST /api/sync        - 同步数据')
     print('    GET  /api/data        - 获取数据')
     print('    GET  /api/accounts    - 获取账户列表')
+    print('    GET  /api/account-balances - 获取账户余额')
     print('    GET  /api/token-status - 检查Token')
     print()
     print('  按 Ctrl+C 停止服务')
