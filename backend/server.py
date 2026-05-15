@@ -1175,7 +1175,7 @@ def favicon():
 
 @app.route('/')
 def index():
-    return send_from_directory(BASE_DIR, 'weekly-report.html')
+    return send_from_directory(BASE_DIR, 'datenanalyse-dashboard.html')
 
 @app.route('/<path:filename>')
 def serve_file(filename):

@@ -6,7 +6,7 @@ Local Flask app for syncing Facebook Ads data and viewing the analytics dashboar
 
 ```text
 trea_al/
-├─ weekly-report.html          Frontend report page
+├─ datenanalyse-dashboard.html Frontend dashboard page
 ├─ backend/
 │  ├─ server.py                Flask app and API server
 │  └─ test_api.py              API smoke test
