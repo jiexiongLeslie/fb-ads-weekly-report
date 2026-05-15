@@ -1967,13 +1967,13 @@ function renderBudgetModule() {
     var spendDiff = budget.planned_daily > 0 ? ((actualDaily - budget.planned_daily) / budget.planned_daily * 100) : 0;
     var spendCls = actualDaily <= budget.planned_daily ? 'growth-down' : 'growth-up';
     
+    var targetROI = budget.target_roi || 10;
+    var targetDailySales = (budget.planned_daily || 0) * targetROI;
+    budget.target_daily_sales = targetDailySales;
+
     // 销售额偏差 = (实际日均销售额 - 目标日均销售额) / 目标日均销售额 * 100%
-    var targetDailySales = budget.target_daily_sales || 0;
     var salesDiff = targetDailySales > 0 ? ((actualDailySales - targetDailySales) / targetDailySales * 100) : 0;
     var salesCls = salesDiff >= 0 ? 'growth-up' : 'growth-down';
-    
-    // 目标ROI
-    var targetROI = budget.target_roi || 10;
     
     // ROI偏差 = 实际ROI - 目标ROI
     var roiDiff = actualROI - targetROI;
@@ -1984,7 +1984,7 @@ function renderBudgetModule() {
     h += '<td><input type="number" class="budget-input" value="' + (budget.planned_daily || '') + '" onchange="updateBudget(\'' + name + '\',\'planned_daily\',this.value)" placeholder="输入目标"></td>';
     h += '<td>' + fmtMoney(actualDaily) + '</td>';
     h += '<td><span class="' + spendCls + '">' + (spendDiff >= 0 ? '+' : '') + spendDiff.toFixed(1) + '%</span></td>';
-    h += '<td><input type="number" class="budget-input" value="' + (budget.target_daily_sales || '') + '" onchange="updateBudget(\'' + name + '\',\'target_daily_sales\',this.value)" placeholder="输入目标"></td>';
+    h += '<td><strong>' + fmtMoney(targetDailySales) + '</strong></td>';
     h += '<td>' + fmtMoney(actualDailySales) + '</td>';
     h += '<td><span class="' + salesCls + '">' + (salesDiff >= 0 ? '+' : '') + salesDiff.toFixed(1) + '%</span></td>';
     h += '<td><input type="number" class="budget-input" style="width:80px" value="' + (budget.target_roi || '') + '" onchange="updateBudget(\'' + name + '\',\'target_roi\',this.value)" placeholder="目标ROI"></td>';
@@ -2005,6 +2005,7 @@ function renderBudgetModule() {
 function updateBudget(siteName, field, value) {
   if (!S.budget[siteName]) return;
   S.budget[siteName][field] = parseFloat(value) || 0;
+  S.budget[siteName].target_daily_sales = (S.budget[siteName].planned_daily || 0) * (S.budget[siteName].target_roi || 0);
   save();
   renderBudgetModule(); // 重新渲染以更新偏差计算
 }
