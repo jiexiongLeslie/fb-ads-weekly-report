@@ -658,6 +658,7 @@ def get_config():
         'filters': {
             'sync': {'start': '', 'end': ''},
             'weekly': {'start': '', 'end': '', 'activeTab': '英国'},
+            'cycle': {'site': '英国站', 'weeks': 2},
             'product': {'start': '', 'end': '', 'activeTab': '电子系列', 'search': ''},
             'budget': {'start': '', 'end': ''},
             'chart': {'start': '', 'end': '', 'activeTab': '全部'},

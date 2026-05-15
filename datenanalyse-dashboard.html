@@ -30,7 +30,7 @@ body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;back
 .nl.active::before{content:'';position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:4px;background:var(--acc)}
 .nl .ni{width:18px;height:18px;border-radius:5px;flex-shrink:0;background:var(--nav-c,#38bdf8);box-shadow:0 8px 16px color-mix(in srgb,var(--nav-c,#38bdf8) 28%,transparent)}
 .nl .ni::before{content:'';display:block;width:7px;height:7px;border-radius:2px;background:rgba(255,255,255,.85);margin:5.5px auto}
-.nl:nth-child(2){--nav-c:#38bdf8}.nl:nth-child(3){--nav-c:#f97316}.nl:nth-child(4){--nav-c:#c084fc}.nl:nth-child(5){--nav-c:#facc15}.nl:nth-child(6){--nav-c:#60a5fa}.nl:nth-child(7){--nav-c:#22c55e}.nl:nth-child(8){--nav-c:#a78bfa}
+.nl:nth-child(2){--nav-c:#38bdf8}.nl:nth-child(3){--nav-c:#f97316}.nl:nth-child(4){--nav-c:#14b8a6}.nl:nth-child(5){--nav-c:#c084fc}.nl:nth-child(6){--nav-c:#facc15}.nl:nth-child(7){--nav-c:#60a5fa}.nl:nth-child(8){--nav-c:#22c55e}.nl:nth-child(9){--nav-c:#a78bfa}
 .sb-ft{position:relative;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);color:var(--sb-t);font-size:.75rem;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.1)}
 .sd{width:6px;height:6px;border-radius:50%;background:var(--ok);display:inline-block}
 .mc{margin-left:var(--sb-w);flex:1;min-height:100vh}
@@ -155,6 +155,9 @@ textarea{resize:vertical;min-height:60px}
 .search-input{min-width:260px;max-width:420px;width:34%;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;background:#fff;font:inherit;color:var(--t1)}
 .search-input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(245,158,11,.18)}
 .table-tools-meta{font-size:.8rem;color:var(--tm)}
+.cycle-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.cycle-controls select{padding:7px 10px;border:1px solid var(--bd);border-radius:6px;background:#fff;color:var(--t1);font:inherit}
+.cycle-summary{font-size:.8rem;color:var(--tm);margin-left:auto}
 textarea.dyn-textarea,table textarea{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:4px;font-size:.85rem;font-family:inherit;resize:vertical;min-height:60px;line-height:1.5;background:var(--bg);color:var(--t1);box-sizing:border-box}
 table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(99,102,241,.2)}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
@@ -223,11 +226,12 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="nav-t">&#25968;&#25454;&#20998;&#26512;</div>
 <div class="nl active" onclick="go('sec-sync')"><span class="ni"></span><span>1. &#21516;&#27493;&#25968;&#25454;&#27010;&#35272;</span></div>
 <div class="nl" onclick="go('sec-weekly')"><span class="ni"></span><span>2. &#31449;&#28857;&#25968;&#25454;&#23545;&#27604;</span></div>
-<div class="nl" onclick="go('sec-product')"><span class="ni"></span><span>3. &#20135;&#21697;&#25237;&#25918;&#26126;&#32454;</span></div>
-<div class="nl" onclick="go('sec-budget')"><span class="ni"></span><span>4. &#39044;&#31639;&#23545;&#27604;</span></div>
-<div class="nl" onclick="go('sec-productcmp')"><span class="ni"></span><span>5. &#20135;&#21697;&#23545;&#27604;</span></div>
-<div class="nl" onclick="go('sec-charts')"><span class="ni"></span><span>6. &#31449;&#28857;&#23545;&#27604;&#30475;&#26495;</span></div>
-<div class="nl" onclick="go('sec-audience')"><span class="ni"></span><span>7. &#21463;&#20247;&#20998;&#26512;</span></div>
+<div class="nl" onclick="go('sec-cycle')"><span class="ni"></span><span>3. &#33258;&#28982;&#21608;&#29615;&#27604;</span></div>
+<div class="nl" onclick="go('sec-product')"><span class="ni"></span><span>4. &#20135;&#21697;&#25237;&#25918;&#26126;&#32454;</span></div>
+<div class="nl" onclick="go('sec-budget')"><span class="ni"></span><span>5. &#39044;&#31639;&#23545;&#27604;</span></div>
+<div class="nl" onclick="go('sec-productcmp')"><span class="ni"></span><span>6. &#20135;&#21697;&#23545;&#27604;</span></div>
+<div class="nl" onclick="go('sec-charts')"><span class="ni"></span><span>7. &#31449;&#28857;&#23545;&#27604;&#30475;&#26495;</span></div>
+<div class="nl" onclick="go('sec-audience')"><span class="ni"></span><span>8. &#21463;&#20247;&#20998;&#26512;</span></div>
 </div>
 <div class="sb-ft"><span class="sd"></span><span>数据已自动保存</span></div>
 </div>
@@ -309,6 +313,41 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 </div>
 </div>
 <div id="weeklyTableArea"></div>
+</div>
+</div>
+
+<!-- ========== 自然周环比分析 ========== -->
+<div class="sec" id="sec-cycle">
+<div class="sh" onclick="tog('sec-cycle')"><div class="sh-l"><span class="si">&#128197;</span><span class="st">自然周环比分析</span></div><span class="stg" id="tg-sec-cycle">&#9660;</span></div>
+<div class="sbd" id="bd-sec-cycle">
+<div class="cycle-controls">
+<label>站点</label>
+<select id="cycleSite" onchange="S.filters.cycle.site=this.value;save();renderCycleModule()">
+<option value="英国站">英国站</option>
+<option value="法国站">法国站</option>
+<option value="德国站">德国站</option>
+<option value="意大利站">意大利站</option>
+</select>
+<label>周期</label>
+<select id="cycleWeeks" onchange="S.filters.cycle.weeks=+this.value;save();renderCycleModule()">
+<option value="2">最近两周</option>
+<option value="3">最近三周</option>
+<option value="4">最近四周</option>
+</select>
+<span class="cycle-summary" id="cycleSummary">按完整自然周对比，周一至周日</span>
+</div>
+<div id="cycleOverview" class="overview-cards"></div>
+<div class="weekly-charts">
+<div class="chart-row">
+<div class="chart-box"><canvas id="cycleSpendSalesChart"></canvas></div>
+<div class="chart-box"><canvas id="cycleRoiCpaChart"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="chart-box"><canvas id="cycleConvChart"></canvas></div>
+<div class="chart-box"><canvas id="cycleCtrCvrChart"></canvas></div>
+</div>
+</div>
+<div id="cycleTableArea"></div>
 </div>
 </div>
 
@@ -496,6 +535,7 @@ var S = {
   filters: {
     sync: {start: '', end: ''},
     weekly: {start: '', end: '', activeTab: '英国'},
+    cycle: {site: '英国站', weeks: 2},
     product: {start: '', end: '', activeTab: '电子系列', page: 1, search: ''},
     budget: {start: '', end: ''},
     chart: {start: '', end: '', activeTab: '全部'},
@@ -763,6 +803,7 @@ function tog(id) {
 function renderActiveModule(id) {
   if (id === 'sec-sync') renderModule7();
   else if (id === 'sec-weekly') renderWeeklyModule();
+  else if (id === 'sec-cycle') renderCycleModule();
   else if (id === 'sec-product') renderProductModule();
   else if (id === 'sec-budget') renderBudgetModule();
   else if (id === 'sec-productcmp') renderPcmpModule();
@@ -970,6 +1011,148 @@ function summarizeDaily(dailyList) {
   total.ctr = Math.round(total.ctr * 100) / 100;
   total.cvr = Math.round(total.cvr * 100) / 100;
   return total;
+}
+
+function fmtDateLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function getRecentFullWeeks(count) {
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var day = today.getDay();
+  var daysSinceSunday = day === 0 ? 0 : day;
+  var lastSunday = new Date(today);
+  lastSunday.setDate(today.getDate() - daysSinceSunday);
+  if (day !== 0) {
+    // 当前周未结束时，只取上一个完整自然周。
+  }
+  var weeks = [];
+  for (var i = count - 1; i >= 0; i--) {
+    var end = new Date(lastSunday);
+    end.setDate(lastSunday.getDate() - i * 7);
+    var start = new Date(end);
+    start.setDate(end.getDate() - 6);
+    weeks.push({
+      label: String(start.getMonth() + 1).padStart(2, '0') + '/' + String(start.getDate()).padStart(2, '0') + ' - ' + String(end.getMonth() + 1).padStart(2, '0') + '/' + String(end.getDate()).padStart(2, '0'),
+      start: fmtDateLocal(start),
+      end: fmtDateLocal(end)
+    });
+  }
+  return weeks;
+}
+
+function calcDelta(curr, prev, inverse) {
+  if (prev === null || prev === undefined || prev === 0) return {text: '--', cls: 'flat', value: null};
+  var value = (curr - prev) / prev * 100;
+  var good = inverse ? value <= 0 : value >= 0;
+  return {text: (value >= 0 ? '+' : '') + value.toFixed(1) + '%', cls: good ? 'growth-up' : 'growth-down', value: value};
+}
+
+function renderDelta(curr, prev, inverse) {
+  var d = calcDelta(curr, prev, inverse);
+  return '<span class="' + d.cls + '">' + d.text + '</span>';
+}
+
+function getCycleRows(siteName, weeks) {
+  return getRecentFullWeeks(weeks).map(function(w) {
+    var daily = getFilteredDailyBySite(siteName, w.start, w.end);
+    var s = summarizeDaily(daily) || {spend:0, sales:0, conversions:0, clicks:0, impressions:0, cpa:0, roi:0, ctr:0, cvr:0, daily_spend:0, daily_sales:0, days:0};
+    s.label = w.label;
+    s.start = w.start;
+    s.end = w.end;
+    return s;
+  });
+}
+
+function renderCycleModule() {
+  if (!S.filters.cycle) S.filters.cycle = {site: '英国站', weeks: 2};
+  var site = S.filters.cycle.site || '英国站';
+  var weeks = +(S.filters.cycle.weeks || 2);
+  var siteEl = document.getElementById('cycleSite');
+  var weeksEl = document.getElementById('cycleWeeks');
+  if (siteEl) siteEl.value = site;
+  if (weeksEl) weeksEl.value = String(weeks);
+
+  var rows = getCycleRows(site, weeks);
+  var summaryEl = document.getElementById('cycleSummary');
+  if (summaryEl && rows.length) summaryEl.textContent = site + ' · ' + rows[0].start + ' 至 ' + rows[rows.length - 1].end + ' · 完整自然周';
+
+  var latest = rows[rows.length - 1] || {};
+  var prev = rows[rows.length - 2] || {};
+  var overview = document.getElementById('cycleOverview');
+  if (overview) {
+    overview.innerHTML =
+      '<div class="overview-card"><div class="ov-label">最新周花费</div><div class="ov-value">' + fmtMoney(latest.spend || 0) + '</div><div class="ov-delta">' + renderDelta(latest.spend || 0, prev.spend || 0, true) + '</div></div>' +
+      '<div class="overview-card"><div class="ov-label">最新周销售额</div><div class="ov-value">' + fmtMoney(latest.sales || 0) + '</div><div class="ov-delta">' + renderDelta(latest.sales || 0, prev.sales || 0, false) + '</div></div>' +
+      '<div class="overview-card"><div class="ov-label">最新周ROI</div><div class="ov-value">' + (latest.roi || 0).toFixed(2) + '</div><div class="ov-delta">' + renderDelta(latest.roi || 0, prev.roi || 0, false) + '</div></div>' +
+      '<div class="overview-card"><div class="ov-label">最新周CPA</div><div class="ov-value">' + fmtMoney(latest.cpa || 0) + '</div><div class="ov-delta">' + renderDelta(latest.cpa || 0, prev.cpa || 0, true) + '</div></div>';
+  }
+
+  renderCycleCharts(rows);
+  renderCycleTable(rows);
+}
+
+function renderCycleCharts(rows) {
+  var labels = rows.map(function(r) { return r.label; });
+  function chart(cid, cfg) {
+    var ctx = document.getElementById(cid);
+    if (!ctx) return;
+    var key = cid + 'Inst';
+    if (window[key]) window[key].destroy();
+    window[key] = new Chart(ctx, cfg);
+  }
+  chart('cycleSpendSalesChart', {
+    type: 'bar',
+    data: {labels: labels, datasets: [
+      {label: '花费 ($)', data: rows.map(function(r) { return r.spend || 0; }), backgroundColor: '#3b82f6', borderRadius: 6},
+      {label: '销售额 ($)', data: rows.map(function(r) { return r.sales || 0; }), backgroundColor: '#10b981', borderRadius: 6}
+    ]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{title:{display:true,text:'周花费 / 销售额环比'}}, scales:{y:{beginAtZero:true}}}
+  });
+  chart('cycleRoiCpaChart', {
+    type: 'line',
+    data: {labels: labels, datasets: [
+      {label: 'ROI', data: rows.map(function(r) { return r.roi || 0; }), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.12)', tension:.35, yAxisID:'y'},
+      {label: 'CPA ($)', data: rows.map(function(r) { return r.cpa || 0; }), borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.12)', tension:.35, yAxisID:'y1'}
+    ]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{title:{display:true,text:'ROI / CPA 环比'}}, scales:{y:{beginAtZero:true,position:'left'}, y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false}}}}
+  });
+  chart('cycleConvChart', {
+    type: 'bar',
+    data: {labels: labels, datasets: [{label: '转化次数', data: rows.map(function(r) { return r.conversions || 0; }), backgroundColor: '#8b5cf6', borderRadius: 6}]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},title:{display:true,text:'周转化次数环比'}}, scales:{y:{beginAtZero:true}}}
+  });
+  chart('cycleCtrCvrChart', {
+    type: 'line',
+    data: {labels: labels, datasets: [
+      {label: 'CTR (%)', data: rows.map(function(r) { return r.ctr || 0; }), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.12)', tension:.35},
+      {label: 'CVR (%)', data: rows.map(function(r) { return r.cvr || 0; }), borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,.12)', tension:.35}
+    ]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{title:{display:true,text:'CTR / CVR 环比'}}, scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function renderCycleTable(rows) {
+  var area = document.getElementById('cycleTableArea');
+  if (!area) return;
+  var h = '<div class="tbl-wrap"><table><thead><tr><th>自然周</th><th>日期范围</th><th>花费</th><th>环比</th><th>销售额</th><th>环比</th><th>转化</th><th>环比</th><th>ROI</th><th>环比</th><th>CPA</th><th>环比</th><th>CTR</th><th>CVR</th></tr></thead><tbody>';
+  rows.forEach(function(r, i) {
+    var p = rows[i - 1] || {};
+    h += '<tr>';
+    h += '<td><strong>第 ' + (i + 1) + ' 周</strong></td>';
+    h += '<td>' + r.start + ' ~ ' + r.end + '</td>';
+    h += '<td>' + fmtMoney(r.spend || 0) + '</td><td>' + renderDelta(r.spend || 0, p.spend || 0, true) + '</td>';
+    h += '<td>' + fmtMoney(r.sales || 0) + '</td><td>' + renderDelta(r.sales || 0, p.sales || 0, false) + '</td>';
+    h += '<td>' + fmtNum(r.conversions || 0) + '</td><td>' + renderDelta(r.conversions || 0, p.conversions || 0, false) + '</td>';
+    h += '<td><strong class="' + roiClass(r.roi || 0) + '">' + (r.roi || 0).toFixed(2) + '</strong></td><td>' + renderDelta(r.roi || 0, p.roi || 0, false) + '</td>';
+    h += '<td>' + fmtMoney(r.cpa || 0) + '</td><td>' + renderDelta(r.cpa || 0, p.cpa || 0, true) + '</td>';
+    h += '<td>' + (r.ctr || 0).toFixed(2) + '%</td>';
+    h += '<td>' + (r.cvr || 0).toFixed(2) + '%</td>';
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  area.innerHTML = h;
 }
 
 function filterDataByDate(data, start, end) {
@@ -3624,6 +3807,7 @@ function renderAll() {
   renderAccountBalanceBoard();
   renderModule7();
   renderWeeklyModule();
+  renderCycleModule();
   renderProductModule();
   renderBudgetModule();
   renderPcmpModule();
