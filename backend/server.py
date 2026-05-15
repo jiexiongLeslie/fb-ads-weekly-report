@@ -644,13 +644,21 @@ def get_data():
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
+    def merge_defaults(default, saved):
+        if not isinstance(default, dict) or not isinstance(saved, dict):
+            return saved
+        merged = dict(default)
+        for key, value in saved.items():
+            merged[key] = merge_defaults(default.get(key), value) if key in default else value
+        return merged
+
     """获取用户配置"""
     default_config = {
         'month': datetime.now().month,
         'filters': {
             'sync': {'start': '', 'end': ''},
             'weekly': {'start': '', 'end': '', 'activeTab': '英国'},
-            'product': {'start': '', 'end': '', 'activeTab': '电子系列'},
+            'product': {'start': '', 'end': '', 'activeTab': '电子系列', 'search': ''},
             'budget': {'start': '', 'end': ''},
             'chart': {'start': '', 'end': '', 'activeTab': '全部'},
             'pcmp': {'startA': '', 'endA': '', 'startB': '', 'endB': '', 'activeTab': '整站数据'},
@@ -668,10 +676,7 @@ def get_config():
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 saved = json.load(f)
-            # 合并默认值和保存的值
-            for key in default_config:
-                if key in saved:
-                    default_config[key] = saved[key]
+            default_config = merge_defaults(default_config, saved)
         except:
             pass
     return jsonify({'success': True, 'config': default_config})

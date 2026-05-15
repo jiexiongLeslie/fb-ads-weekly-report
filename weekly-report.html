@@ -151,6 +151,10 @@ textarea{resize:vertical;min-height:60px}
 .td-campaign{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .budget-input{width:100px;padding:4px 6px;border:1px solid var(--bd);border-radius:4px;font-size:.85rem;text-align:right;background:var(--bg)}
 .budget-input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(99,102,241,.2)}
+.table-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;flex-wrap:wrap}
+.search-input{min-width:260px;max-width:420px;width:34%;padding:8px 12px;border:1px solid var(--bd);border-radius:6px;background:#fff;font:inherit;color:var(--t1)}
+.search-input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(245,158,11,.18)}
+.table-tools-meta{font-size:.8rem;color:var(--tm)}
 textarea.dyn-textarea,table textarea{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:4px;font-size:.85rem;font-family:inherit;resize:vertical;min-height:60px;line-height:1.5;background:var(--bg);color:var(--t1);box-sizing:border-box}
 table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(99,102,241,.2)}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
@@ -330,6 +334,13 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <div class="chart-box"><canvas id="productSpendChart"></canvas></div>
 <div class="chart-box"><canvas id="productROIChart"></canvas></div>
 </div>
+<div class="chart-row">
+<div class="chart-box"><canvas id="productCPAChart"></canvas></div>
+<div class="chart-box"><canvas id="productCtrCvrChart"></canvas></div>
+</div>
+<div class="chart-row">
+<div class="chart-box chart-box-wide"><canvas id="productWasteChart"></canvas></div>
+</div>
 </div>
 <div id="productTableArea"></div>
 </div>
@@ -485,7 +496,7 @@ var S = {
   filters: {
     sync: {start: '', end: ''},
     weekly: {start: '', end: '', activeTab: '英国'},
-    product: {start: '', end: '', activeTab: '电子系列', page: 1},
+    product: {start: '', end: '', activeTab: '电子系列', page: 1, search: ''},
     budget: {start: '', end: ''},
     chart: {start: '', end: '', activeTab: '全部'},
     pcmp: {startA: '', endA: '', startB: '', endB: '', activeTab: '整站数据'},
@@ -1638,24 +1649,40 @@ function renderProductCharts() {
   var end = S.filters.product.end;
   var data = getProductDataFromSync(prod, start, end);
   
-  if (data.length === 0) return;
+  if (data.length === 0) {
+    ['productSpendChartInst','productROIChartInst','productCPAChartInst','productCtrCvrChartInst','productWasteChartInst'].forEach(function(k) {
+      if (window[k]) { window[k].destroy(); window[k] = null; }
+    });
+    return;
+  }
   
   // 按国家汇总
   var countryData = {};
   data.forEach(function(row) {
     var c = row.country || '未知';
     if (!countryData[c]) {
-      countryData[c] = { spend: 0, sales: 0, conversions: 0 };
+      countryData[c] = { spend: 0, sales: 0, conversions: 0, clicks: 0, impressions: 0 };
     }
     countryData[c].spend += parseFloat(row.spend) || 0;
     countryData[c].sales += parseFloat(row.sales) || 0;
     countryData[c].conversions += parseInt(row.conversions) || 0;
+    countryData[c].clicks += parseInt(row.clicks) || 0;
+    countryData[c].impressions += parseInt(row.impressions) || 0;
   });
   
   var labels = Object.keys(countryData);
   var spendData = labels.map(function(c) { return countryData[c].spend; });
   var roiData = labels.map(function(c) { 
     return countryData[c].spend > 0 ? countryData[c].sales / countryData[c].spend : 0;
+  });
+  var cpaData = labels.map(function(c) {
+    return countryData[c].conversions > 0 ? countryData[c].spend / countryData[c].conversions : 0;
+  });
+  var ctrData = labels.map(function(c) {
+    return countryData[c].impressions > 0 ? countryData[c].clicks / countryData[c].impressions * 100 : 0;
+  });
+  var cvrData = labels.map(function(c) {
+    return countryData[c].clicks > 0 ? countryData[c].conversions / countryData[c].clicks * 100 : 0;
   });
   
   // 花费对比图
@@ -1706,6 +1733,49 @@ function renderProductCharts() {
       }
     });
   }
+
+  var cpaCtx = document.getElementById('productCPAChart');
+  if (cpaCtx) {
+    if (window.productCPAChartInst) window.productCPAChartInst.destroy();
+    window.productCPAChartInst = new Chart(cpaCtx, {
+      type: 'bar',
+      data: {labels: labels, datasets: [{label: 'CPA ($)', data: cpaData, backgroundColor: '#f97316', borderRadius: 6}]},
+      options: {responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: prod + ' - 各国家CPA对比' } }, scales: { y: { beginAtZero: true } }}
+    });
+  }
+
+  var ctrCvrCtx = document.getElementById('productCtrCvrChart');
+  if (ctrCvrCtx) {
+    if (window.productCtrCvrChartInst) window.productCtrCvrChartInst.destroy();
+    window.productCtrCvrChartInst = new Chart(ctrCvrCtx, {
+      type: 'bar',
+      data: {labels: labels, datasets: [
+        {label: 'CTR (%)', data: ctrData, backgroundColor: '#38bdf8', borderRadius: 6},
+        {label: 'CVR (%)', data: cvrData, backgroundColor: '#22c55e', borderRadius: 6}
+      ]},
+      options: {responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: prod + ' - CTR/CVR对比' } }, scales: { y: { beginAtZero: true } }}
+    });
+  }
+
+  var wasteRows = data.map(function(row) {
+    var spend = parseFloat(row.spend) || 0;
+    var sales = parseFloat(row.sales) || 0;
+    var roi = spend > 0 ? sales / spend : 0;
+    return {label: (row.country || '') + ' · ' + (row.campaign || '').slice(0, 34), spend: spend, roi: roi};
+  }).filter(function(row) {
+    return row.spend > 0;
+  }).sort(function(a, b) {
+    return (b.spend * Math.max(0, 3 - b.roi)) - (a.spend * Math.max(0, 3 - a.roi));
+  }).slice(0, 8);
+  var wasteCtx = document.getElementById('productWasteChart');
+  if (wasteCtx) {
+    if (window.productWasteChartInst) window.productWasteChartInst.destroy();
+    window.productWasteChartInst = new Chart(wasteCtx, {
+      type: 'bar',
+      data: {labels: wasteRows.map(function(r) { return r.label; }), datasets: [{label: '花费 ($)', data: wasteRows.map(function(r) { return r.spend; }), backgroundColor: wasteRows.map(function(r) { return r.roi < 3 ? '#ef4444' : r.roi < 6 ? '#f59e0b' : '#10b981'; }), borderRadius: 6}]},
+      options: {indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: prod + ' - 高消耗低ROI优先排查' }, tooltip: { callbacks: { afterLabel: function(ctx) { var row = wasteRows[ctx.dataIndex]; return 'ROI: ' + row.roi.toFixed(2); } } } }, scales: { x: { beginAtZero: true } }}
+    });
+  }
 }
 
 function renderProductTable() {
@@ -1717,10 +1787,19 @@ function renderProductTable() {
   var page = S.filters.product.page || 1;
   var pageSize = 10;
   
-  var data = getProductDataFromSync(prod, start, end);
+  var allData = getProductDataFromSync(prod, start, end);
+  var query = (S.filters.product.search || '').trim().toLowerCase();
+  var data = allData.filter(function(row) {
+    if (!query) return true;
+    return [row.country, row.date, row.campaign].join(' ').toLowerCase().indexOf(query) !== -1;
+  });
   
-  if (data.length === 0) {
+  if (allData.length === 0) {
     area.innerHTML = '<div class="empty-state"><p>暂无数据</p><p>该日期范围内未找到匹配「' + prod + '」的广告系列数据</p></div>';
+    return;
+  }
+  if (data.length === 0) {
+    area.innerHTML = '<div class="table-tools"><input class="search-input" type="search" value="' + esc(S.filters.product.search || '') + '" placeholder="搜索国家 / 日期 / 广告系列" oninput="updateProductSearch(this.value)"><span class="table-tools-meta">共 ' + allData.length + ' 条，无匹配结果</span></div><div class="empty-state"><p>没有匹配的广告系列</p><p>请调整搜索关键词</p></div>';
     return;
   }
   
@@ -1743,7 +1822,8 @@ function renderProductTable() {
   var startIdx = (page - 1) * pageSize;
   var pageData = data.slice(startIdx, startIdx + pageSize);
   
-  var h = '<div class="tbl-wrap"><table><thead><tr><th>国家</th><th>日期</th><th>广告系列</th><th>花费</th><th>销售额</th><th>转化</th><th>CPA</th><th>ROI</th><th>点击</th><th>展示</th><th>CTR</th><th>CVR</th></tr></thead><tbody>';
+  var h = '<div class="table-tools"><input class="search-input" type="search" value="' + esc(S.filters.product.search || '') + '" placeholder="搜索国家 / 日期 / 广告系列" oninput="updateProductSearch(this.value)"><span class="table-tools-meta">显示 ' + data.length + ' / ' + allData.length + ' 条</span></div>';
+  h += '<div class="tbl-wrap"><table><thead><tr><th>国家</th><th>日期</th><th>广告系列</th><th>花费</th><th>销售额</th><th>转化</th><th>CPA</th><th>ROI</th><th>点击</th><th>展示</th><th>CTR</th><th>CVR</th></tr></thead><tbody>';
   
   pageData.forEach(function(row) {
     h += '<tr><td><strong>' + esc(row.country || '') + '</strong></td>';
@@ -1809,6 +1889,13 @@ function renderProductTable() {
 
 function goProductPage(page) {
   S.filters.product.page = page;
+  save();
+  renderProductTable();
+}
+
+function updateProductSearch(value) {
+  S.filters.product.search = value || '';
+  S.filters.product.page = 1;
   save();
   renderProductTable();
 }
