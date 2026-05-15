@@ -13,6 +13,8 @@ if ($existing) {
     exit 0
 }
 
+Add-Content -Path (Join-Path $logs "startup.log") -Value "$(Get-Date -Format s) starting service"
+
 $py = Get-Command py -ErrorAction SilentlyContinue
 if (-not $py) {
     Add-Content -Path (Join-Path $logs "startup.log") -Value "$(Get-Date -Format s) py launcher not found"
@@ -40,3 +42,5 @@ Start-Process `
     -WindowStyle Hidden `
     -RedirectStandardOutput $outLog `
     -RedirectStandardError $errLog
+
+Add-Content -Path (Join-Path $logs "startup.log") -Value "$(Get-Date -Format s) started via $pythonw"
