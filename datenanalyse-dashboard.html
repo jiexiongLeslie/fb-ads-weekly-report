@@ -116,9 +116,16 @@ textarea{resize:vertical;min-height:60px}
 .site-card .metric .mv{font-weight:700;font-size:1.1rem}
 /* FB同步概览样式 */
 .overview-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.overview-card{position:relative;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%) !important;border:1px solid #e5e7eb;border-top:3px solid var(--acc);border-radius:var(--r);padding:18px 20px;color:var(--t1) !important;box-shadow:0 10px 24px rgba(15,23,42,.06)}
-.overview-card::after{content:'';position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(59,130,246,.1));pointer-events:none}
-.overview-card .ov-label{font-size:.82rem;color:#64748b;opacity:1;margin-bottom:5px;font-weight:700}
+.overview-card{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff7ed 0%,#eef6ff 100%) !important;border:1px solid rgba(148,163,184,.25);border-left:4px solid var(--acc);border-radius:var(--r);padding:18px 20px;color:var(--t1) !important;box-shadow:0 14px 28px rgba(15,23,42,.08)}
+.overview-card:nth-child(2n){background:linear-gradient(135deg,#ecfdf5 0%,#f5f3ff 100%) !important;border-left-color:#10b981}
+.overview-card:nth-child(3n){background:linear-gradient(135deg,#eff6ff 0%,#fff7ed 100%) !important;border-left-color:#3b82f6}
+.overview-card:nth-child(4n){background:linear-gradient(135deg,#faf5ff 0%,#ecfeff 100%) !important;border-left-color:#8b5cf6}
+.overview-card::before{content:'';position:absolute;right:-24px;top:-28px;width:92px;height:92px;border-radius:28px;background:rgba(255,255,255,.55);transform:rotate(18deg);pointer-events:none}
+.overview-card::after{content:'';position:absolute;right:16px;top:16px;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(245,158,11,.3),rgba(59,130,246,.22));pointer-events:none}
+.overview-card:nth-child(2n)::after{background:linear-gradient(135deg,rgba(16,185,129,.28),rgba(139,92,246,.2))}
+.overview-card:nth-child(3n)::after{background:linear-gradient(135deg,rgba(59,130,246,.26),rgba(245,158,11,.22))}
+.overview-card:nth-child(4n)::after{background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(20,184,166,.2))}
+.overview-card .ov-label{font-size:.82rem;color:#475569;opacity:1;margin-bottom:5px;font-weight:800}
 .overview-card .ov-value{font-size:1.75rem;font-weight:800;color:#111827;letter-spacing:0}
 .overview-card .ov-delta{font-size:.82rem;margin-top:8px;opacity:1}
 .overview-card .ov-delta .growth-up,.overview-card .ov-delta .growth-down,.overview-card .ov-delta .flat{display:inline-flex;align-items:center;width:max-content;padding:3px 8px;border-radius:999px;font-weight:800}
