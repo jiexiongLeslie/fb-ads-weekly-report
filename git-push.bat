@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ==========================================
-echo    Datenanalyse-Dashboard - Git自动上传工具
+echo    Datenanalyse-Dashboard(UK/FR/DE/IT) - Git自动上传工具
 echo ==========================================
 echo.
 
