@@ -62,6 +62,8 @@ body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;back
 .filter-bar input[type="date"]:hover,.filter-bar input[type="date"]:focus{border-color:var(--acc)}
 .filter-bar .filter-info{margin-left:auto;font-size:.8rem;color:var(--tm);background:#fff;padding:4px 10px;border-radius:var(--r);border:1px solid var(--bd);white-space:nowrap}
 .filter-bar .btn-sm{padding:5px 10px;font-size:.75rem}
+.quick-date{padding:5px 9px;border:1px solid #cbd5e1;border-radius:var(--r);background:#fff;color:#334155;font-size:.78rem;font-weight:700;font-family:inherit}
+.quick-date:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px rgba(245,158,11,.16)}
 .kpi-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .kpi-c{padding:20px;border-left:4px solid var(--acc);background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
 .kpi-lb{font-size:.85rem;color:var(--t2);margin-bottom:8px}
@@ -269,6 +271,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="syncStart" onchange="S.filters.sync.start=this.value;save()">
 <span>~</span>
 <input type="date" id="syncEnd" onchange="S.filters.sync.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('sync',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="applySyncFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearSyncFilter()">清除</button>
 <span class="filter-info" id="syncFilterInfo">全部数据</span>
@@ -309,6 +312,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="weeklyStart" onchange="S.filters.weekly.start=this.value;save()">
 <span>~</span>
 <input type="date" id="weeklyEnd" onchange="S.filters.weekly.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('weekly',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="applyWeeklyFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearWeeklyFilter()">清除</button>
 <span class="filter-info" id="weeklyFilterInfo">全部数据</span>
@@ -373,6 +377,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="productStart" onchange="S.filters.product.start=this.value;save()">
 <span>~</span>
 <input type="date" id="productEnd" onchange="S.filters.product.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('product',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="applyProductFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearProductFilter()">清除</button>
 <span class="filter-info" id="productFilterInfo">全部数据</span>
@@ -407,6 +412,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="budgetStart" onchange="S.filters.budget.start=this.value;save()">
 <span>~</span>
 <input type="date" id="budgetEnd" onchange="S.filters.budget.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('budget',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="applyBudgetFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearBudgetFilter()">清除</button>
 <span class="filter-info" id="budgetFilterInfo">全部数据</span>
@@ -425,12 +431,14 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="pcmpStartA" onchange="S.filters.pcmp.startA=this.value;save()">
 <span>~</span>
 <input type="date" id="pcmpEndA" onchange="S.filters.pcmp.endA=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('pcmpA',this.value);this.value=''"><option value="">快捷日期</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 </div>
 <div style="display:flex;align-items:center;gap:8px;background:#fff7ed;padding:6px 12px;border-radius:6px">
 <span>&#128200; 周期B:</span>
 <input type="date" id="pcmpStartB" onchange="S.filters.pcmp.startB=this.value;save()">
 <span>~</span>
 <input type="date" id="pcmpEndB" onchange="S.filters.pcmp.endB=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('pcmpB',this.value);this.value=''"><option value="">快捷日期</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 </div>
 <button class="btn btn-sm btn-p" onclick="applyPcmpFilter()">对比</button>
 <button class="btn btn-sm btn-s" onclick="clearPcmpFilter()">清除</button>
@@ -463,6 +471,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="chartStart" onchange="S.filters.chart.start=this.value;save()">
 <span>~</span>
 <input type="date" id="chartEnd" onchange="S.filters.chart.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('chart',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="applyChartFilter()">确认</button>
 <button class="btn btn-sm btn-s" onclick="clearChartFilter()">清除</button>
 <span class="filter-info" id="chartFilterInfo">全部数据</span>
@@ -484,6 +493,7 @@ table textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 2px r
 <input type="date" id="audStart" onchange="S.filters.audience.start=this.value;save()">
 <span>~</span>
 <input type="date" id="audEnd" onchange="S.filters.audience.end=this.value;save()">
+<select class="quick-date" onchange="applyQuickDate('audience',this.value);this.value=''"><option value="">快捷日期</option><option value="today">今天</option><option value="yesterday">昨天</option><option value="last7">最近7天</option><option value="last14">最近14天</option><option value="thisWeek">本周</option><option value="lastWeek">上周</option><option value="thisMonth">本月</option><option value="lastMonth">上月</option></select>
 <button class="btn btn-sm btn-p" onclick="fetchAudience(this)">&#128269; 获取受众数据</button>
 <button class="btn btn-sm btn-p" style="background:#f59e0b" onclick="fetchCustomerType(this)">&#128100; 新老客户</button>
 <button class="btn btn-sm btn-s" onclick="refreshAudience()">刷新</button>
@@ -1028,6 +1038,74 @@ function summarizeDaily(dailyList) {
 
 function fmtDateLocal(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function getQuickDateRange(type) {
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var start = new Date(today);
+  var end = new Date(today);
+  if (type === 'yesterday') {
+    start.setDate(today.getDate() - 1);
+    end.setDate(today.getDate() - 1);
+  } else if (type === 'last7') {
+    start.setDate(today.getDate() - 6);
+  } else if (type === 'last14') {
+    start.setDate(today.getDate() - 13);
+  } else if (type === 'thisWeek') {
+    var offset = today.getDay() === 0 ? 6 : today.getDay() - 1;
+    start.setDate(today.getDate() - offset);
+  } else if (type === 'lastWeek') {
+    var thisWeekOffset = today.getDay() === 0 ? 6 : today.getDay() - 1;
+    end.setDate(today.getDate() - thisWeekOffset - 1);
+    start = new Date(end);
+    start.setDate(end.getDate() - 6);
+  } else if (type === 'thisMonth') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+  } else if (type === 'lastMonth') {
+    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    end = new Date(today.getFullYear(), today.getMonth(), 0);
+  }
+  return {start: fmtDateLocal(start), end: fmtDateLocal(end)};
+}
+
+function renderAfterQuickDate(key) {
+  if (key === 'sync') renderModule7();
+  else if (key === 'weekly') renderWeeklyModule();
+  else if (key === 'product') renderProductModule();
+  else if (key === 'budget') renderBudgetModule();
+  else if (key === 'chart') renderChartModule();
+  else if (key === 'pcmpA' || key === 'pcmpB') renderPcmpModule();
+  else if (key === 'audience') {
+    if (AUDIENCE_DATA) renderAudienceModule();
+    var info = document.getElementById('audFilterInfo');
+    if (info) info.textContent = S.filters.audience.start + ' ~ ' + S.filters.audience.end;
+  }
+}
+
+function applyQuickDate(key, type) {
+  if (!type) return;
+  var range = getQuickDateRange(type);
+  var map = {
+    sync: {filter: S.filters.sync, start: 'syncStart', end: 'syncEnd', startKey: 'start', endKey: 'end'},
+    weekly: {filter: S.filters.weekly, start: 'weeklyStart', end: 'weeklyEnd', startKey: 'start', endKey: 'end'},
+    product: {filter: S.filters.product, start: 'productStart', end: 'productEnd', startKey: 'start', endKey: 'end'},
+    budget: {filter: S.filters.budget, start: 'budgetStart', end: 'budgetEnd', startKey: 'start', endKey: 'end'},
+    chart: {filter: S.filters.chart, start: 'chartStart', end: 'chartEnd', startKey: 'start', endKey: 'end'},
+    audience: {filter: S.filters.audience, start: 'audStart', end: 'audEnd', startKey: 'start', endKey: 'end'},
+    pcmpA: {filter: S.filters.pcmp, start: 'pcmpStartA', end: 'pcmpEndA', startKey: 'startA', endKey: 'endA'},
+    pcmpB: {filter: S.filters.pcmp, start: 'pcmpStartB', end: 'pcmpEndB', startKey: 'startB', endKey: 'endB'}
+  };
+  var cfg = map[key];
+  if (!cfg || !cfg.filter) return;
+  cfg.filter[cfg.startKey] = range.start;
+  cfg.filter[cfg.endKey] = range.end;
+  var sEl = document.getElementById(cfg.start);
+  var eEl = document.getElementById(cfg.end);
+  if (sEl) sEl.value = range.start;
+  if (eEl) eEl.value = range.end;
+  save();
+  renderAfterQuickDate(key);
 }
 
 function getRecentFullWeeks(count) {
